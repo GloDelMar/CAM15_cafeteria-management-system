@@ -4,14 +4,15 @@ from models.schemas import Debtor, DebtorCreate, DebtorUpdate, PaymentResponse
 from database import db, get_next_sequence
 from datetime import datetime
 from pymongo import DESCENDING
+from single_caja import normalize_caja_id
 
 router = APIRouter()
 
 
 def _current_balance(caja_id: Optional[int]) -> float:
+    caja_id = normalize_caja_id(caja_id)
     balance_filter = {}
-    if caja_id is not None:
-        balance_filter["caja_id"] = caja_id
+    balance_filter["caja_id"] = caja_id
 
     last_operation = db.cash_operations.find_one(
         balance_filter,
@@ -22,10 +23,9 @@ def _current_balance(caja_id: Optional[int]) -> float:
     if last_operation:
         return float(last_operation.get("saldo", 0))
 
-    if caja_id is not None:
-        caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "saldo_inicial": 1})
-        if caja:
-            return float(caja.get("saldo_inicial", 0))
+    caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "saldo_inicial": 1})
+    if caja:
+        return float(caja.get("saldo_inicial", 0))
 
     return 0.0
 
@@ -34,11 +34,13 @@ async def get_all_debtors(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     grupo: Optional[str] = None,
-    nombre: Optional[str] = None
+    nombre: Optional[str] = None,
+    caja_id: Optional[int] = None
 ):
     """Obtener todos los deudores con filtros opcionales"""
     try:
         mongo_filter = {}
+        mongo_filter["caja_id"] = normalize_caja_id(caja_id)
         if grupo:
             mongo_filter["grupo"] = grupo
         if nombre:
@@ -71,7 +73,10 @@ async def get_debtor(debtor_id: int):
 async def get_debtor_by_name(nombre: str, grupo: str):
     """Obtener un deudor por nombre y grupo"""
     try:
-        debtor = db.debtors.find_one({"nombre": nombre, "grupo": grupo}, {"_id": 0})
+        debtor = db.debtors.find_one(
+            {"nombre": nombre, "grupo": grupo, "caja_id": normalize_caja_id()},
+            {"_id": 0},
+        )
         if not debtor:
             raise HTTPException(status_code=404, detail="Deudor no encontrado")
         return debtor
@@ -85,11 +90,15 @@ async def create_debtor(debtor: DebtorCreate):
     """Crear un nuevo deudor"""
     try:
         # Verificar si ya existe
-        existing = db.debtors.find_one({"nombre": debtor.nombre, "grupo": debtor.grupo}, {"_id": 0})
+        existing = db.debtors.find_one(
+            {"nombre": debtor.nombre, "grupo": debtor.grupo, "caja_id": normalize_caja_id(debtor.caja_id)},
+            {"_id": 0},
+        )
         if existing:
             raise HTTPException(status_code=400, detail="El deudor ya existe")
 
         debtor_dict = debtor.model_dump()
+        debtor_dict["caja_id"] = normalize_caja_id(debtor_dict.get("caja_id"))
         now = datetime.utcnow()
         debtor_dict["id"] = get_next_sequence("debtors")
         debtor_dict["fecha_primera_deuda"] = now
@@ -120,7 +129,8 @@ async def pay_debt(
         if nueva_deuda < 0:
             raise HTTPException(status_code=400, detail="El monto excede la deuda")
 
-        current_balance = _current_balance(caja_id)
+        resolved_caja_id = normalize_caja_id(caja_id)
+        current_balance = _current_balance(resolved_caja_id)
 
         # Si la deuda queda en 0, eliminar el deudor
         if nueva_deuda == 0:
@@ -132,7 +142,7 @@ async def pay_debt(
                 "monto": monto,
                 "saldo": current_balance + monto,
                 "descripcion": f"Pago de deuda - {debtor['nombre']} ({debtor['grupo']}) - Saldada completamente",
-                "caja_id": caja_id,
+                "caja_id": resolved_caja_id,
                 "id": get_next_sequence("cash_operations"),
                 "fecha": datetime.utcnow(),
             }
@@ -154,7 +164,7 @@ async def pay_debt(
                 "monto": monto,
                 "saldo": current_balance + monto,
                 "descripcion": f"Pago parcial de deuda - {debtor['nombre']} ({debtor['grupo']}) - Resta ${nueva_deuda:.2f}",
-                "caja_id": caja_id,
+                "caja_id": resolved_caja_id,
                 "id": get_next_sequence("cash_operations"),
                 "fecha": datetime.utcnow(),
             }
@@ -206,10 +216,10 @@ async def delete_debtor(debtor_id: int):
         raise HTTPException(status_code=500, detail=f"Error al eliminar deudor: {str(e)}")
 
 @router.get("/stats/summary")
-async def get_debtors_summary():
+async def get_debtors_summary(caja_id: Optional[int] = None):
     """Obtener resumen de deudas"""
     try:
-        debtors = list(db.debtors.find({}, {"_id": 0}))
+        debtors = list(db.debtors.find({"caja_id": normalize_caja_id(caja_id)}, {"_id": 0}))
 
         total_deuda = sum(d["deuda"] for d in debtors)
 

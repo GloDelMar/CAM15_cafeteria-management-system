@@ -4,19 +4,27 @@ from models.schemas import Caja, CajaCreate, CajaUpdate
 from database import db, get_next_sequence
 from datetime import datetime
 from pymongo import ASCENDING, DESCENDING
+from single_caja import get_or_create_single_caja, get_single_caja_id, normalize_caja_id
 
 router = APIRouter()
 
 @router.get("/", response_model=List[Caja])
 async def get_cajas(activa_only: bool = False):
-    """Obtener todas las cajas"""
+    """Obtener la caja unica del sistema."""
     try:
-        mongo_filter = {}
-        if activa_only:
-            mongo_filter["activa"] = True
+        caja = get_or_create_single_caja()
+        if activa_only and not caja.get("activa", True):
+            return []
+        return [caja]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-        cajas = list(db.cajas.find(mongo_filter, {"_id": 0}).sort("nombre", ASCENDING))
-        return cajas
+
+@router.get("/current", response_model=Caja)
+async def get_current_caja():
+    """Obtener la caja unica activa para operar el sistema."""
+    try:
+        return get_or_create_single_caja()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -24,7 +32,11 @@ async def get_cajas(activa_only: bool = False):
 async def get_caja(caja_id: int):
     """Obtener una caja por ID"""
     try:
-        caja = db.cajas.find_one({"id": caja_id}, {"_id": 0})
+        normalized_id = normalize_caja_id(caja_id)
+        if caja_id != normalized_id:
+            raise HTTPException(status_code=404, detail="Caja no encontrada")
+
+        caja = db.cajas.find_one({"id": normalized_id}, {"_id": 0})
 
         if not caja:
             raise HTTPException(status_code=404, detail="Caja no encontrada")
@@ -37,22 +49,15 @@ async def get_caja(caja_id: int):
 
 @router.post("/", response_model=Caja, status_code=201)
 async def create_caja(caja: CajaCreate):
-    """Crear una nueva caja"""
+    """Mantiene compatibilidad y actualiza la caja unica existente."""
     try:
-        existing = db.cajas.find_one({"nombre": caja.nombre}, {"_id": 0, "id": 1})
-        if existing:
-            raise HTTPException(status_code=400, detail="Ya existe una caja con ese nombre")
-
-        caja_dict = caja.model_dump()
-        caja_dict["id"] = get_next_sequence("cajas")
-        caja_dict["created_at"] = datetime.utcnow()
-        db.cajas.insert_one(caja_dict)
-
-        if not caja_dict:
-            raise HTTPException(status_code=400, detail="Error al crear la caja")
-
-        caja_dict.pop("_id", None)
-        return caja_dict
+        current_id = get_single_caja_id()
+        update_data = caja.model_dump()
+        db.cajas.update_one({"id": current_id}, {"$set": update_data})
+        updated = db.cajas.find_one({"id": current_id}, {"_id": 0})
+        if not updated:
+            raise HTTPException(status_code=400, detail="Error al actualizar la caja")
+        return updated
     except HTTPException:
         raise
     except Exception as e:
@@ -64,8 +69,12 @@ async def create_caja(caja: CajaCreate):
 async def update_caja(caja_id: int, caja_update: CajaUpdate):
     """Actualizar una caja"""
     try:
+        normalized_id = normalize_caja_id(caja_id)
+        if caja_id != normalized_id:
+            raise HTTPException(status_code=404, detail="Caja no encontrada")
+
         # Verificar que la caja existe
-        check = db.cajas.find_one({"id": caja_id}, {"_id": 0, "id": 1})
+        check = db.cajas.find_one({"id": normalized_id}, {"_id": 0, "id": 1})
         if not check:
             raise HTTPException(status_code=404, detail="Caja no encontrada")
 
@@ -74,8 +83,8 @@ async def update_caja(caja_id: int, caja_update: CajaUpdate):
         if not update_data:
             raise HTTPException(status_code=400, detail="No hay datos para actualizar")
 
-        db.cajas.update_one({"id": caja_id}, {"$set": update_data})
-        updated = db.cajas.find_one({"id": caja_id}, {"_id": 0})
+        db.cajas.update_one({"id": normalized_id}, {"$set": update_data})
+        updated = db.cajas.find_one({"id": normalized_id}, {"_id": 0})
 
         if not updated:
             raise HTTPException(status_code=400, detail="Error al actualizar la caja")
@@ -88,20 +97,12 @@ async def update_caja(caja_id: int, caja_update: CajaUpdate):
 
 @router.delete("/{caja_id}")
 async def delete_caja(caja_id: int):
-    """Eliminar una caja (soft delete - marcar como inactiva)"""
+    """No se permite desactivar la caja unica del sistema."""
     try:
-        # Verificar que la caja existe
-        check = db.cajas.find_one({"id": caja_id}, {"_id": 0, "id": 1})
-        if not check:
+        normalized_id = normalize_caja_id(caja_id)
+        if caja_id != normalized_id:
             raise HTTPException(status_code=404, detail="Caja no encontrada")
-
-        # Marcar como inactiva en lugar de eliminar
-        result = db.cajas.update_one({"id": caja_id}, {"$set": {"activa": False}})
-
-        if result.matched_count == 0:
-            raise HTTPException(status_code=400, detail="Error al desactivar la caja")
-
-        return {"message": "Caja desactivada exitosamente"}
+        raise HTTPException(status_code=400, detail="La caja unica no se puede desactivar")
     except HTTPException:
         raise
     except Exception as e:
@@ -112,6 +113,7 @@ async def get_caja_saldo(caja_id: int):
     """Obtener el saldo actual de una caja"""
     try:
         # Verificar que la caja existe
+        caja_id = normalize_caja_id(caja_id)
         caja_info = db.cajas.find_one({"id": caja_id}, {"_id": 0, "id": 1, "nombre": 1, "saldo_inicial": 1})
         if not caja_info:
             raise HTTPException(status_code=404, detail="Caja no encontrada")
@@ -144,6 +146,7 @@ async def get_productos_por_caja(caja_id: int):
     """Obtener todos los productos de una caja específica"""
     try:
         # Verificar que la caja existe
+        caja_id = normalize_caja_id(caja_id)
         check = db.cajas.find_one({"id": caja_id}, {"_id": 0, "id": 1})
         if not check:
             raise HTTPException(status_code=404, detail="Caja no encontrada")

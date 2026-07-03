@@ -4,6 +4,7 @@ from models.schemas import CashOperation, CashOperationCreate
 from database import db, get_next_sequence
 from datetime import datetime
 from pymongo import DESCENDING
+from single_caja import normalize_caja_id
 
 router = APIRouter()
 
@@ -31,8 +32,7 @@ async def get_cash_operations(
             mongo_filter.setdefault("fecha", {})["$lte"] = _parse_date(fecha_hasta)
         if tipo_operacion:
             mongo_filter["tipo_operacion"] = tipo_operacion
-        if caja_id is not None:
-            mongo_filter["caja_id"] = caja_id
+        mongo_filter["caja_id"] = normalize_caja_id(caja_id)
 
         operations = list(
             db.cash_operations.find(mongo_filter, {"_id": 0})
@@ -48,9 +48,8 @@ async def get_cash_operations(
 async def get_current_balance(caja_id: Optional[int] = None):
     """Obtener saldo actual de caja (todas o una específica)"""
     try:
-        mongo_filter = {}
-        if caja_id is not None:
-            mongo_filter["caja_id"] = caja_id
+        caja_id = normalize_caja_id(caja_id)
+        mongo_filter = {"caja_id": caja_id}
 
         last_operation = db.cash_operations.find_one(
             mongo_filter,
@@ -59,28 +58,25 @@ async def get_current_balance(caja_id: Optional[int] = None):
         )
 
         if not last_operation:
-            # Si no hay operaciones y es una caja específica, obtener saldo inicial
-            if caja_id is not None:
-                caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "saldo_inicial": 1, "nombre": 1})
-                if caja:
-                    return {
-                        "saldo": caja["saldo_inicial"],
-                        "ultima_actualizacion": None,
-                        "caja_id": caja_id,
-                        "caja_nombre": caja["nombre"]
-                    }
-            return {"saldo": 0, "ultima_actualizacion": None}
+            caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "saldo_inicial": 1, "nombre": 1})
+            if caja:
+                return {
+                    "saldo": caja["saldo_inicial"],
+                    "ultima_actualizacion": None,
+                    "caja_id": caja_id,
+                    "caja_nombre": caja["nombre"]
+                }
+            return {"saldo": 0, "ultima_actualizacion": None, "caja_id": caja_id}
 
         result = {
             "saldo": last_operation["saldo"],
             "ultima_actualizacion": last_operation["fecha"]
         }
 
-        if caja_id is not None:
-            result["caja_id"] = caja_id
-            caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "nombre": 1})
-            if caja:
-                result["caja_nombre"] = caja["nombre"]
+        result["caja_id"] = caja_id
+        caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "nombre": 1})
+        if caja:
+            result["caja_nombre"] = caja["nombre"]
 
         return result
     except Exception as e:
@@ -103,10 +99,10 @@ async def get_cash_operation(operation_id: int):
 async def create_cash_operation(operation: CashOperationCreate):
     """Crear una nueva operación de caja (ingreso, egreso o ajuste)"""
     try:
+        operation.caja_id = normalize_caja_id(operation.caja_id)
         # Obtener saldo actual de la caja específica
         last_filter = {}
-        if operation.caja_id is not None:
-            last_filter["caja_id"] = operation.caja_id
+        last_filter["caja_id"] = operation.caja_id
 
         last_operation = db.cash_operations.find_one(
             last_filter,
@@ -115,7 +111,7 @@ async def create_cash_operation(operation: CashOperationCreate):
         )
 
         # Si no hay operaciones previas y hay caja_id, usar saldo inicial de la caja
-        if not last_operation and operation.caja_id is not None:
+        if not last_operation:
             caja = db.cajas.find_one({"id": operation.caja_id}, {"_id": 0, "saldo_inicial": 1})
             current_balance = caja["saldo_inicial"] if caja else 0
         else:
@@ -187,6 +183,7 @@ async def adjust_balance(monto: float = Query(...), descripcion: str = Query("Aj
 async def get_daily_cash_stats(fecha: Optional[str] = None, caja_id: Optional[int] = None):
     """Obtener estadísticas de caja del día"""
     try:
+        caja_id = normalize_caja_id(caja_id)
         if not fecha:
             fecha = datetime.now().strftime("%Y-%m-%d")
         
@@ -196,9 +193,7 @@ async def get_daily_cash_stats(fecha: Optional[str] = None, caja_id: Optional[in
         print(f"[DEBUG] getDailyStats - fecha: {fecha}, caja_id: {caja_id}")
         print(f"[DEBUG] Rango: {fecha_inicio} a {fecha_fin}")
 
-        current_day_filter = {"fecha": {"$gte": fecha_inicio, "$lte": fecha_fin}}
-        if caja_id is not None:
-            current_day_filter["caja_id"] = caja_id
+        current_day_filter = {"fecha": {"$gte": fecha_inicio, "$lte": fecha_fin}, "caja_id": caja_id}
         operations = list(db.cash_operations.find(current_day_filter, {"_id": 0}))
 
         print(f"[DEBUG] Operaciones encontradas: {len(operations)}")
@@ -212,9 +207,7 @@ async def get_daily_cash_stats(fecha: Optional[str] = None, caja_id: Optional[in
         print(f"[DEBUG] ingresos: {ingresos}, egresos: {egresos}, ajustes: {ajustes}")
 
         # Saldo al inicio del día
-        query_before = {"fecha": {"$lt": fecha_inicio}}
-        if caja_id is not None:
-            query_before["caja_id"] = caja_id
+        query_before = {"fecha": {"$lt": fecha_inicio}, "caja_id": caja_id}
         operation_before = db.cash_operations.find_one(
             query_before,
             {"_id": 0},
@@ -222,16 +215,14 @@ async def get_daily_cash_stats(fecha: Optional[str] = None, caja_id: Optional[in
         )
 
         # Si no hay operaciones previas y hay caja_id, usar saldo inicial de la caja
-        if not operation_before and caja_id is not None:
+        if not operation_before:
             caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "saldo_inicial": 1})
             saldo_inicial = caja["saldo_inicial"] if caja else 0
         else:
             saldo_inicial = operation_before["saldo"] if operation_before else 0
 
         # Saldo actual
-        query_current = {}
-        if caja_id is not None:
-            query_current["caja_id"] = caja_id
+        query_current = {"caja_id": caja_id}
         current = db.cash_operations.find_one(
             query_current,
             {"_id": 0},

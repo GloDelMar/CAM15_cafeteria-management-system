@@ -4,6 +4,7 @@ from models.schemas import Transaction, TransactionCreate
 from database import db, get_next_sequence
 from datetime import datetime
 from pymongo import DESCENDING
+from single_caja import normalize_caja_id
 
 router = APIRouter()
 
@@ -15,9 +16,9 @@ def _parse_date(value: Optional[str]) -> Optional[datetime]:
 
 
 def _current_balance(caja_id: Optional[int]) -> float:
+    caja_id = normalize_caja_id(caja_id)
     balance_filter = {}
-    if caja_id is not None:
-        balance_filter["caja_id"] = caja_id
+    balance_filter["caja_id"] = caja_id
 
     last_operation = db.cash_operations.find_one(
         balance_filter,
@@ -28,10 +29,9 @@ def _current_balance(caja_id: Optional[int]) -> float:
     if last_operation:
         return float(last_operation.get("saldo", 0))
 
-    if caja_id is not None:
-        caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "saldo_inicial": 1})
-        if caja:
-            return float(caja.get("saldo_inicial", 0))
+    caja = db.cajas.find_one({"id": caja_id}, {"_id": 0, "saldo_inicial": 1})
+    if caja:
+        return float(caja.get("saldo_inicial", 0))
 
     return 0.0
 
@@ -57,8 +57,7 @@ async def get_transactions(
             mongo_filter["cliente"] = {"$regex": cliente, "$options": "i"}
         if grupo:
             mongo_filter["grupo"] = grupo
-        if caja_id is not None:
-            mongo_filter["caja_id"] = caja_id
+        mongo_filter["caja_id"] = normalize_caja_id(caja_id)
         if pagado:
             mongo_filter["pagado"] = pagado
 
@@ -90,6 +89,7 @@ async def create_transaction(transaction: TransactionCreate):
     """Crear una nueva transacción"""
     try:
         transaction_dict = transaction.model_dump()
+        transaction_dict["caja_id"] = normalize_caja_id(transaction_dict.get("caja_id"))
         transaction_dict["id"] = get_next_sequence("transactions")
         transaction_dict["fecha"] = datetime.utcnow()
         print(f"[DEBUG] Transaction data received: {transaction_dict}")
@@ -105,13 +105,12 @@ async def create_transaction(transaction: TransactionCreate):
                 "nombre": transaction.cliente,
                 "grupo": transaction.grupo,
                 "deuda": transaction.total - transaction.pago,
-                "caja_id": transaction.caja_id
+                "caja_id": transaction_dict["caja_id"]
             }
 
             # Verificar si el deudor ya existe
             existing_filter = {"nombre": transaction.cliente, "grupo": transaction.grupo}
-            if transaction.caja_id is not None:
-                existing_filter["caja_id"] = transaction.caja_id
+            existing_filter["caja_id"] = transaction_dict["caja_id"]
             existing = db.debtors.find_one(existing_filter, {"_id": 0})
 
             if existing:
@@ -130,14 +129,14 @@ async def create_transaction(transaction: TransactionCreate):
 
         # Registrar movimiento en caja solo si hay pago
         if transaction.pago > 0:
-            current_balance = _current_balance(transaction.caja_id)
+            current_balance = _current_balance(transaction_dict["caja_id"])
 
             # Usar el TOTAL de la venta, no el pago
             cash_operation = {
                 "tipo_operacion": "VENTA",
                 "monto": transaction.total,  # Total de la venta, no el pago
                 "descripcion": f"Venta a {transaction.cliente} - {len(transaction.productos)} productos",
-                "caja_id": transaction.caja_id,
+                "caja_id": transaction_dict["caja_id"],
                 "saldo": current_balance + transaction.total,  # Sumar el total
                 "id": get_next_sequence("cash_operations"),
                 "fecha": created_transaction["fecha"],
@@ -154,7 +153,7 @@ async def create_transaction(transaction: TransactionCreate):
         raise HTTPException(status_code=500, detail=f"Error al crear transacción: {str(e)}")
 
 @router.get("/stats/daily")
-async def get_daily_stats(fecha: Optional[str] = None):
+async def get_daily_stats(fecha: Optional[str] = None, caja_id: Optional[int] = None):
     """Obtener estadísticas del día"""
     try:
         if not fecha:
@@ -165,7 +164,13 @@ async def get_daily_stats(fecha: Optional[str] = None):
 
         # Transacciones del día
         transactions = list(
-            db.transactions.find({"fecha": {"$gte": fecha_inicio, "$lte": fecha_fin}}, {"_id": 0})
+            db.transactions.find(
+                {
+                    "fecha": {"$gte": fecha_inicio, "$lte": fecha_fin},
+                    "caja_id": normalize_caja_id(caja_id),
+                },
+                {"_id": 0},
+            )
         )
 
         total_ventas = sum(t["total"] for t in transactions)
@@ -184,7 +189,11 @@ async def get_daily_stats(fecha: Optional[str] = None):
         raise HTTPException(status_code=500, detail=f"Error al obtener estadísticas: {str(e)}")
 
 @router.get("/stats/monthly")
-async def get_monthly_stats(year: int = Query(...), month: int = Query(..., ge=1, le=12)):
+async def get_monthly_stats(
+    year: int = Query(...),
+    month: int = Query(..., ge=1, le=12),
+    caja_id: Optional[int] = None,
+):
     """Obtener estadísticas del mes"""
     try:
         fecha_inicio = datetime.fromisoformat(f"{year}-{month:02d}-01T00:00:00")
@@ -196,7 +205,13 @@ async def get_monthly_stats(year: int = Query(...), month: int = Query(..., ge=1
             next_month = datetime.fromisoformat(f"{year}-{month + 1:02d}-01T00:00:00")
 
         transactions = list(
-            db.transactions.find({"fecha": {"$gte": fecha_inicio, "$lt": next_month}}, {"_id": 0})
+            db.transactions.find(
+                {
+                    "fecha": {"$gte": fecha_inicio, "$lt": next_month},
+                    "caja_id": normalize_caja_id(caja_id),
+                },
+                {"_id": 0},
+            )
         )
 
         total_ventas = sum(t["total"] for t in transactions)
@@ -220,11 +235,12 @@ async def get_transactions_by_teacher(
     limit: int = Query(100, ge=1, le=1000),
     fecha_desde: Optional[str] = None,
     fecha_hasta: Optional[str] = None,
-    only_unpaid: bool = False
+    only_unpaid: bool = False,
+    caja_id: Optional[int] = None
 ):
     """Obtener todas las transacciones de un maestro específico"""
     try:
-        mongo_filter = {"cliente": teacher_name}
+        mongo_filter = {"cliente": teacher_name, "caja_id": normalize_caja_id(caja_id)}
 
         # Aplicar filtros
         if fecha_desde:
@@ -245,11 +261,16 @@ async def get_transactions_by_teacher(
         raise HTTPException(status_code=500, detail=f"Error al obtener transacciones del maestro: {str(e)}")
 
 @router.get("/by-teacher/{teacher_name}/summary")
-async def get_teacher_summary(teacher_name: str):
+async def get_teacher_summary(teacher_name: str, caja_id: Optional[int] = None):
     """Obtener resumen de transacciones de un maestro"""
     try:
         # Obtener todas las transacciones del maestro
-        transactions = list(db.transactions.find({"cliente": teacher_name}, {"_id": 0}))
+        transactions = list(
+            db.transactions.find(
+                {"cliente": teacher_name, "caja_id": normalize_caja_id(caja_id)},
+                {"_id": 0},
+            )
+        )
 
         if not transactions:
             return {

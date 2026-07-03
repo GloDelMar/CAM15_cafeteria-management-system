@@ -12,6 +12,7 @@ from services.storage import (
     get_local_product_image_path,
     load_s3_product_image,
 )
+from single_caja import normalize_caja_id
 
 router = APIRouter()
 
@@ -24,11 +25,9 @@ def _serialize(doc: Optional[dict]) -> Optional[dict]:
 
 @router.get("/", response_model=List[Product])
 async def get_all_products(caja_id: Optional[int] = None):
-    """Obtener todos los productos, opcionalmente filtrados por caja"""
+    """Obtener todos los productos de la caja unica."""
     try:
-        query = {}
-        if caja_id is not None:
-            query["caja_id"] = caja_id
+        query = {"caja_id": normalize_caja_id(caja_id)}
 
         products = list(db.products.find(query, {"_id": 0}).sort("name", ASCENDING))
         return products
@@ -83,6 +82,7 @@ async def create_product(product: ProductCreate):
     """Crear un nuevo producto"""
     try:
         product_dict = product.model_dump()
+        product_dict["caja_id"] = normalize_caja_id(product_dict.get("caja_id"))
         product_dict["id"] = get_next_sequence("products")
         product_dict["created_at"] = datetime.utcnow()
         print(f"[DEBUG] Creating product with data: {product_dict}")
@@ -108,6 +108,9 @@ async def update_product(product_id: int, product: ProductUpdate):
         update_dict = product.model_dump(exclude_unset=True)
         if not update_dict:
             raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+
+        if "caja_id" in update_dict:
+            update_dict["caja_id"] = normalize_caja_id(update_dict.get("caja_id"))
 
         db.products.update_one({"id": product_id}, {"$set": update_dict})
         updated = db.products.find_one({"id": product_id}, {"_id": 0})

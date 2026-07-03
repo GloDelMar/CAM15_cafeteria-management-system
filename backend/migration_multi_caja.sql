@@ -1,5 +1,5 @@
 -- ============================================
--- MIGRACIÓN: Sistema Multi-Caja
+-- MIGRACION: Caja Unica CAM 15
 -- ============================================
 
 -- 1. Crear tabla de cajas
@@ -15,19 +15,16 @@ CREATE TABLE IF NOT EXISTS cajas (
 -- Índices para cajas
 CREATE INDEX idx_cajas_activa ON cajas(activa);
 
--- 2. Insertar cajas predeterminadas
+-- 2. Insertar caja unica
 INSERT INTO cajas (nombre, descripcion, saldo_inicial) VALUES
-('Agua', 'Caja para venta de agua y bebidas', 0),
-('Papelería', 'Caja para venta de artículos de papelería', 0),
-('Panadería', 'Caja para venta de pan y productos de panadería', 0),
-('General', 'Caja general para otros productos', 0)
+('CAFETERIA CAM 15', 'Caja registradora unica de la cafeteria CAM 15', 0)
 ON CONFLICT (nombre) DO NOTHING;
 
 -- 3. Agregar columna caja_id a la tabla products
 ALTER TABLE products ADD COLUMN IF NOT EXISTS caja_id BIGINT REFERENCES cajas(id) ON DELETE SET NULL;
 
--- Asignar productos existentes a la caja "General" por defecto
-UPDATE products SET caja_id = (SELECT id FROM cajas WHERE nombre = 'General' LIMIT 1) WHERE caja_id IS NULL;
+-- Asignar productos existentes a la caja unica por defecto
+UPDATE products SET caja_id = (SELECT id FROM cajas WHERE nombre = 'CAFETERIA CAM 15' LIMIT 1) WHERE caja_id IS NULL;
 
 -- Crear índice para caja_id en products
 CREATE INDEX IF NOT EXISTS idx_products_caja_id ON products(caja_id);
@@ -35,8 +32,8 @@ CREATE INDEX IF NOT EXISTS idx_products_caja_id ON products(caja_id);
 -- 4. Agregar columna caja_id a la tabla transactions
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS caja_id BIGINT REFERENCES cajas(id) ON DELETE SET NULL;
 
--- Asignar transacciones existentes a la caja "General" por defecto
-UPDATE transactions SET caja_id = (SELECT id FROM cajas WHERE nombre = 'General' LIMIT 1) WHERE caja_id IS NULL;
+-- Asignar transacciones existentes a la caja unica por defecto
+UPDATE transactions SET caja_id = (SELECT id FROM cajas WHERE nombre = 'CAFETERIA CAM 15' LIMIT 1) WHERE caja_id IS NULL;
 
 -- Crear índice para caja_id en transactions
 CREATE INDEX IF NOT EXISTS idx_transactions_caja_id ON transactions(caja_id);
@@ -44,8 +41,8 @@ CREATE INDEX IF NOT EXISTS idx_transactions_caja_id ON transactions(caja_id);
 -- 5. Agregar columna caja_id a la tabla cash_operations
 ALTER TABLE cash_operations ADD COLUMN IF NOT EXISTS caja_id BIGINT REFERENCES cajas(id) ON DELETE SET NULL;
 
--- Asignar operaciones de caja existentes a la caja "General" por defecto
-UPDATE cash_operations SET caja_id = (SELECT id FROM cajas WHERE nombre = 'General' LIMIT 1) WHERE caja_id IS NULL;
+-- Asignar operaciones de caja existentes a la caja unica por defecto
+UPDATE cash_operations SET caja_id = (SELECT id FROM cajas WHERE nombre = 'CAFETERIA CAM 15' LIMIT 1) WHERE caja_id IS NULL;
 
 -- Crear índice para caja_id en cash_operations
 CREATE INDEX IF NOT EXISTS idx_cash_operations_caja_id ON cash_operations(caja_id);
@@ -98,7 +95,7 @@ $$ LANGUAGE plpgsql;
 DROP VIEW IF EXISTS dashboard_summary_por_caja;
 DROP VIEW IF EXISTS dashboard_summary;
 
--- Vista actualizada para dashboard por caja
+-- Vista actualizada para dashboard de caja unica
 CREATE VIEW dashboard_summary_por_caja AS
 SELECT 
     c.id as caja_id,
@@ -111,7 +108,7 @@ SELECT
 FROM cajas c
 WHERE c.activa = true;
 
--- 9. Vista consolidada (todas las cajas)
+-- 9. Vista consolidada
 CREATE VIEW dashboard_summary AS
 SELECT 
     (SELECT COUNT(*) FROM products) as total_productos,
@@ -125,7 +122,7 @@ SELECT
 -- INSTRUCCIONES DE EJECUCIÓN
 -- ============================================
 -- 1. Ejecutar este script en Supabase SQL Editor
--- 2. Verificar que las cajas se crearon correctamente:
+-- 2. Verificar que la caja unica se creo correctamente:
 --    SELECT * FROM cajas;
 -- 3. Verificar que los productos tienen caja asignada:
 --    SELECT id, name, caja_id FROM products LIMIT 10;

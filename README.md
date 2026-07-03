@@ -1,6 +1,6 @@
-# La Tiendita POS - Sistema Web
+# Cafeteria CAM 15 POS - Sistema Web
 
-Sistema de Punto de Venta moderno desarrollado con Next.js, FastAPI y MongoDB.
+Sistema de punto de venta para la Cafeteria CAM 15 desarrollado con Next.js, FastAPI y MongoDB.
 
 ## 🏗️ Arquitectura
 
@@ -228,7 +228,7 @@ Ver guías detalladas en la carpeta `/docs`
 - Pagos parciales/totales
 - Historial de deudas
 
-✅ **Control de Caja**
+✅ **Control de Caja Unica**
 - Saldo en tiempo real
 - Ingresos y egresos
 - Estadísticas diarias/mensuales

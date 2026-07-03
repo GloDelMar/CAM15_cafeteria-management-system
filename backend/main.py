@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from routers import products, transactions, debtors, cash, cajas
 from pathlib import Path
 from dotenv import load_dotenv
+from single_caja import get_or_create_single_caja
 
 load_dotenv()
 
@@ -32,6 +33,11 @@ app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(transactions.router, prefix="/api/transactions", tags=["transactions"])
 app.include_router(debtors.router, prefix="/api/debtors", tags=["debtors"])
 app.include_router(cash.router, prefix="/api/cash", tags=["cash"])
+
+
+@app.on_event("startup")
+async def ensure_single_caja() -> None:
+    get_or_create_single_caja()
 
 @app.get("/")
 async def root():
