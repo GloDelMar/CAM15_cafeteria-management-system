@@ -104,7 +104,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
           onClick={() => router.push('/ventas')}
-          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
+          className="bg-blue-900 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">🛒</div>
           <div className="font-bold text-lg">Vender</div>
@@ -113,7 +113,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/productos')}
-          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
+          className="bg-blue-900 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">📦</div>
           <div className="font-bold text-lg">Productos</div>
@@ -122,7 +122,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/recibos')}
-          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
+          className="bg-blue-900 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">📄</div>
           <div className="font-bold text-lg">Recibos</div>
@@ -131,7 +131,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/caja')}
-          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
+          className="bg-blue-900 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">💰</div>
           <div className="font-bold text-lg">Caja</div>
@@ -183,8 +183,8 @@ export default function Dashboard() {
                 <tr className="border-b-2 border-blue-200 bg-amber-50">
                   <th className="text-left py-3 px-4 font-bold text-blue-900">Tipo</th>
                   <th className="text-left py-3 px-4 font-bold text-blue-900">Monto</th>
-                  <th className="text-left py-3 px-4 font-bold text-amber-900">Razón</th>
-                  <th className="text-left py-3 px-4 font-bold text-amber-900">Fecha</th>
+                  <th className="text-left py-3 px-4 font-bold text-blue-900">Razón</th>
+                  <th className="text-left py-3 px-4 font-bold text-blue-900">Fecha</th>
                 </tr>
               </thead>
               <tbody>
@@ -193,13 +193,13 @@ export default function Dashboard() {
                     <td className="py-3 px-4">
                       <span className={`px-3 py-1 rounded-full text-sm font-bold ${
                         op.tipo === 'INGRESO' 
-                          ? 'bg-amber-100 text-amber-800' 
+                          ? 'bg-amber-100 text-blue-800' 
                           : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {op.tipo}
                       </span>
                     </td>
-                    <td className="py-3 px-4 font-bold text-amber-900">{formatCurrency(op.monto)}</td>
+                    <td className="py-3 px-4 font-bold text-blue-900">{formatCurrency(op.monto)}</td>
                     <td className="py-3 px-4 text-gray-700">{op.razon}</td>
                     <td className="py-3 px-4 text-gray-600 text-sm">{new Date(op.fecha).toLocaleDateString()}</td>
                   </tr>
