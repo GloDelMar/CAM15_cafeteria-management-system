@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
-/* CAM 15 Accessible Color Palette - Warm, Comfortable */
+/* CAM 15 Accessible Color Palette - WCAG AA+ Compliant, Colorblind Safe */
 :root {
-  --background: #FFF9F0;
-  --foreground: #1A1A1A;
+  --background: #FFFBF5;
+  --foreground: #2D2D2D;
   
-  /* Colores principales - Café, Beige, Arena, Negro - MÁS VIBRANTES Y ALEGRES */
-  --primary-cafe-dark: #9B6B3D;
-  --primary-cafe: #C07F4A;
-  --primary-beige: #FFFAEE;
-  --primary-arena: #F5D584;
-  --primary-negro: #1A1A1A;
+  /* Colores principales - Accesibles para daltonismo y baja visión */
+  --primary-naranja: #CC6600;      /* Naranja cálido, visible para daltónicos */
+  --primary-naranja-dark: #994400; /* Naranja oscuro para contraste */
+  --primary-azul: #0066CC;         /* Azul accesible para daltónicos */
+  --primary-gris-oscuro: #333333;  /* Texto principal */
+  --primary-gris-claro: #F0F0F0;   /* Fondos secundarios */
+  --primary-crema: #F5F0E8;        /* Fondo accesible */
   
-  /* Azul - Uso mínimo */
-  --primary-blue-dark: #3B82F6;
-  --primary-blue: #60A5FA;
+  /* Colores de estado - Seguros para daltonismo */
+  --success: #228B22;   /* Verde oscuro (visible para daltónicos) */
+  --warning: #FF8C00;   /* Naranja oscuro (rojo-ciego safe) */
+  --danger: #8B0000;    /* Rojo muy oscuro (visible) */
   
   /* Acentos complementarios */
   --accent-sand: #E8DACC;

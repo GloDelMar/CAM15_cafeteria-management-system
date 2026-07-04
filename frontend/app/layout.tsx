@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.className} ${inter.variable} bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50`}>
+      <body className={`${inter.className} ${inter.variable} bg-orange-50`}>
         <AuthGuard>
           <CajaProvider>
             <div className="min-h-screen flex flex-col">
