@@ -2,19 +2,19 @@
 
 /* CAM 15 Accessible Color Palette - Warm, Comfortable */
 :root {
-  --background: #FAF7F2;
-  --foreground: #2D2D2D;
+  --background: #FFF9F0;
+  --foreground: #1A1A1A;
   
-  /* Colores principales - Café, Beige, Arena, Negro */
-  --primary-cafe-dark: #6B4423;
-  --primary-cafe: #8B5A2B;
-  --primary-beige: #F5E6D3;
-  --primary-arena: #D2B48C;
+  /* Colores principales - Café, Beige, Arena, Negro - MÁS VIBRANTES Y ALEGRES */
+  --primary-cafe-dark: #9B6B3D;
+  --primary-cafe: #C07F4A;
+  --primary-beige: #FFFAEE;
+  --primary-arena: #F5D584;
   --primary-negro: #1A1A1A;
   
   /* Azul - Uso mínimo */
-  --primary-blue-dark: #1E3A8A;
-  --primary-blue: #1E40AF;
+  --primary-blue-dark: #3B82F6;
+  --primary-blue: #60A5FA;
   
   /* Acentos complementarios */
   --accent-sand: #E8DACC;

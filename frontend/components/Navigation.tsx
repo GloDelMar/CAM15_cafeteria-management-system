@@ -35,28 +35,23 @@ const Navigation = () => {
   ];
   
   return (
-    <nav className="bg-gradient-to-r from-amber-900 via-amber-800 to-yellow-700 shadow-lg sticky top-0 z-50">
+    <nav className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-500 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-16 sm:h-20 md:h-20">
-          {/* Logo y Nombre - Comentado: puede ser agregado luego si se desea */}
-          {/* 
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-900 rounded-lg px-2 py-1">
+          {/* Logo y Nombre */}
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-700 rounded-lg px-2 py-1">
             <Image 
-              src="/cam15_logo.png" 
+              src="/cafeteria_logo.png" 
               alt="Cafetería CAM 15 Logo" 
               width={40} 
               height={40}
               className="object-contain sm:w-12 sm:h-12 md:w-14 md:h-14"
             />
-          </Link>
-          */}
-          
-          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-900 rounded-lg px-2 py-1">
-            <div className="flex flex-col">
+            <div className="hidden sm:flex flex-col">
               <span className="text-base sm:text-lg md:text-2xl font-black text-white leading-tight">
                 Cafetería CAM 15
               </span>
-              <span className="text-[10px] sm:text-xs md:text-sm text-amber-100 font-semibold">
+              <span className="text-[10px] sm:text-xs md:text-sm text-amber-50 font-semibold">
                 Punto de Venta
               </span>
             </div>
@@ -71,10 +66,10 @@ const Navigation = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-4 py-2.5 rounded-lg text-sm md:text-base font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-amber-300 ${
+                  className={`px-4 py-2.5 rounded-lg text-sm md:text-base font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-700 ${
                     isActive
-                      ? 'bg-white text-amber-900 shadow-md'
-                      : 'text-white hover:bg-white hover:bg-opacity-10'
+                      ? 'bg-white text-amber-700 shadow-md'
+                      : 'text-white hover:bg-white hover:bg-opacity-20'
                   }`}
                   title={item.label}
                 >
@@ -88,7 +83,7 @@ const Navigation = () => {
           {/* Logout button - Desktop */}
           <button
             onClick={handleLogout}
-            className="hidden sm:block px-4 py-2.5 bg-white text-amber-900 font-bold rounded-lg hover:bg-amber-100 transition-all focus:outline-none focus:ring-2 focus:ring-amber-300 text-sm md:text-base"
+            className="hidden sm:block px-4 py-2.5 bg-white text-amber-700 font-bold rounded-lg hover:bg-amber-50 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-700 text-sm md:text-base"
             title="Cerrar sesión"
           >
             🚪 Salir
@@ -97,7 +92,7 @@ const Navigation = () => {
           {/* Hamburger button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-3 rounded-lg text-white hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all"
+            className="lg:hidden p-3 rounded-lg text-white hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-700 transition-all"
             aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={isMenuOpen}
           >
@@ -130,10 +125,10 @@ const Navigation = () => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-lg text-base font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-amber-300 ${
+                  className={`block px-4 py-3 rounded-lg text-base font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-700 ${
                     isActive
-                      ? 'bg-white text-amber-900 shadow-md'
-                      : 'text-white hover:bg-white hover:bg-opacity-10'
+                      ? 'bg-white text-amber-700 shadow-md'
+                      : 'text-white hover:bg-white hover:bg-opacity-20'
                   }`}
                 >
                   <span className="mr-2 text-lg">{item.icon}</span>
@@ -144,7 +139,7 @@ const Navigation = () => {
             
             <button
               onClick={handleLogout}
-              className="w-full px-4 py-3 bg-white text-amber-900 font-bold rounded-lg hover:bg-amber-100 transition-all focus:outline-none focus:ring-2 focus:ring-amber-300 text-base"
+              className="w-full px-4 py-3 bg-white text-amber-700 font-bold rounded-lg hover:bg-amber-50 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-amber-700 text-base"
             >
               🚪 Cerrar sesión
             </button>

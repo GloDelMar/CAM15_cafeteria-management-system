@@ -82,22 +82,20 @@ export default function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header con nombre */}
-      <div className="bg-gradient-to-r from-amber-900 via-amber-800 to-yellow-700 rounded-2xl shadow-xl p-8 mb-8 text-white">
+      <div className="bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-500 rounded-2xl shadow-xl p-8 mb-8 text-white">
         <div className="flex items-center space-x-4 sm:space-x-6">
-          {/* Logo comentado */}
-          {/* 
+          {/* Logo */}
           <Image 
-            src="/cam15_logo.png" 
+            src="/cafeteria_logo.png" 
             alt="Cafetería CAM 15 Logo" 
             width={80} 
             height={80}
-            className="object-contain bg-white rounded-lg p-2"
+            className="object-contain bg-white rounded-lg p-2 w-20 h-20 sm:w-24 sm:h-24"
           />
-          */}
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-black">Cafetería CAM 15</h1>
-            <p className="text-base sm:text-lg text-amber-100 font-semibold">Centro de Atención Múltiple No.15</p>
-            <p className="text-base sm:text-lg text-amber-100">Punto de Venta - Sistema de Cajas</p>
+            <p className="text-base sm:text-lg text-amber-50 font-semibold">Centro de Atención Múltiple No.15</p>
+            <p className="text-base sm:text-lg text-amber-50">Punto de Venta - Sistema de Cajas</p>
           </div>
         </div>
       </div>
@@ -106,7 +104,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
           onClick={() => router.push('/ventas')}
-          className="bg-gradient-to-br from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-600"
+          className="bg-gradient-to-br from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-500"
         >
           <div className="text-4xl mb-2">🛒</div>
           <div className="font-bold text-lg">Vender</div>
@@ -115,7 +113,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/productos')}
-          className="bg-gradient-to-br from-yellow-700 to-amber-700 hover:from-yellow-800 hover:to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-600"
+          className="bg-gradient-to-br from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-500"
         >
           <div className="text-4xl mb-2">📦</div>
           <div className="font-bold text-lg">Productos</div>
@@ -124,7 +122,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/recibos')}
-          className="bg-gradient-to-br from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-500"
+          className="bg-gradient-to-br from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-400"
         >
           <div className="text-4xl mb-2">📄</div>
           <div className="font-bold text-lg">Recibos</div>
@@ -133,7 +131,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/caja')}
-          className="bg-gradient-to-br from-yellow-600 to-amber-700 hover:from-yellow-700 hover:to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-500"
+          className="bg-gradient-to-br from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-400"
         >
           <div className="text-4xl mb-2">💰</div>
           <div className="font-bold text-lg">Caja</div>
@@ -143,21 +141,21 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-lg border-l-4 border-amber-700 p-6">
+        <div className="bg-white rounded-xl shadow-lg border-l-4 border-amber-600 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 font-semibold text-sm">Saldo Actual</p>
-              <p className="text-4xl font-black text-amber-700 mt-2">{formatCurrency(saldo)}</p>
+              <p className="text-4xl font-black text-amber-600 mt-2">{formatCurrency(saldo)}</p>
             </div>
             <div className="text-5xl opacity-30">💵</div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border-l-4 border-yellow-700 p-6">
+        <div className="bg-white rounded-xl shadow-lg border-l-4 border-yellow-600 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 font-semibold text-sm">Total Ingresos</p>
-              <p className="text-4xl font-black text-yellow-700 mt-2">{formatCurrency(totalIngresos)}</p>
+              <p className="text-4xl font-black text-yellow-600 mt-2">{formatCurrency(totalIngresos)}</p>
             </div>
             <div className="text-5xl opacity-30">📈</div>
           </div>
@@ -176,15 +174,15 @@ export default function Dashboard() {
 
       {/* Operaciones recientes */}
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-amber-900 mb-4">📋 Últimas Operaciones</h2>
+        <h2 className="text-2xl font-bold text-amber-700 mb-4">📋 Últimas Operaciones</h2>
         
         {recentOperations && recentOperations.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b-2 border-amber-200 bg-amber-50">
-                  <th className="text-left py-3 px-4 font-bold text-amber-900">Tipo</th>
-                  <th className="text-left py-3 px-4 font-bold text-amber-900">Monto</th>
+                  <th className="text-left py-3 px-4 font-bold text-amber-700">Tipo</th>
+                  <th className="text-left py-3 px-4 font-bold text-amber-700">Monto</th>
                   <th className="text-left py-3 px-4 font-bold text-amber-900">Razón</th>
                   <th className="text-left py-3 px-4 font-bold text-amber-900">Fecha</th>
                 </tr>
