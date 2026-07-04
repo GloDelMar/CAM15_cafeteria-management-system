@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 
 # Modelos para Cajas
@@ -29,6 +29,8 @@ class ProductBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     price: float = Field(..., gt=0)
     stock: int = Field(default=0, ge=0)
+    category: str = Field(default="alimentos", pattern="^(bebidas|alimentos|postres)$")
+    option_groups: List["ProductOptionGroup"] = Field(default_factory=list)
     image_url: Optional[str] = None
     caja_id: Optional[int] = None
 
@@ -39,8 +41,17 @@ class ProductUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     price: Optional[float] = Field(None, gt=0)
     stock: Optional[int] = Field(None, ge=0)
+    category: Optional[str] = Field(None, pattern="^(bebidas|alimentos|postres)$")
+    option_groups: Optional[List["ProductOptionGroup"]] = None
     image_url: Optional[str] = None
     caja_id: Optional[int] = None
+
+class ProductOptionGroup(BaseModel):
+    key: str = Field(..., min_length=1, max_length=50)
+    label: str = Field(..., min_length=1, max_length=120)
+    selection_type: Literal["single", "multiple"] = "multiple"
+    choices: List[str] = Field(default_factory=list)
+
 
 class Product(ProductBase):
     id: int
@@ -54,6 +65,13 @@ class ProductInTransaction(BaseModel):
     cantidad: int
     precio_unitario: float
     subtotal: float
+    opciones: List["TransactionOptionSelection"] = Field(default_factory=list)
+
+
+class TransactionOptionSelection(BaseModel):
+    group_key: str = Field(..., min_length=1, max_length=50)
+    group_label: str = Field(..., min_length=1, max_length=120)
+    values: List[str] = Field(default_factory=list)
 
 class TransactionBase(BaseModel):
     cliente: str = "Cliente"

@@ -1,4 +1,4 @@
-# Optimizaciones de Rendimiento para Windows - La Tiendita
+# Optimizaciones de Rendimiento para Windows - Cafeteria CAM 15
 
 ## 🚀 Resumen de Optimizaciones Implementadas
 
@@ -158,7 +158,7 @@ cache.clear_cache()
 
 ## 🎯 Conclusión
 
-La aplicación "La Tiendita" ahora está completamente optimizada para funcionar a máxima velocidad, especialmente en sistemas Windows. Las mejoras incluyen:
+La aplicación "Cafeteria CAM 15" ahora está completamente optimizada para funcionar a máxima velocidad, especialmente en sistemas Windows. Las mejoras incluyen:
 
 - **Sistema de cache inteligente** que reduce las operaciones de disco en 90%
 - **Optimizaciones de UI** que evitan reconstrucciones innecesarias

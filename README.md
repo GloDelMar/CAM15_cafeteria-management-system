@@ -12,7 +12,7 @@ Sistema de punto de venta para la Cafeteria CAM 15 desarrollado con Next.js, Fas
 ## 📁 Estructura del Proyecto
 
 ```
-la_tiendita/
+cafeteria_cam15/
 ├── frontend/          # Aplicación Next.js
 ├── backend/           # API FastAPI
 │   ├── routers/      # Endpoints de la API
@@ -52,7 +52,7 @@ pip install -r requirements.txt
 ```bash
 # Editar backend/.env con tu configuración de MongoDB
 MONGODB_URI=mongodb://localhost:27017
-MONGODB_DB=la_tiendita
+MONGODB_DB=cafeteria_cam15
 FRONTEND_URL=http://localhost:3000
 MONGODB_SERVER_SELECTION_TIMEOUT_MS=15000
 

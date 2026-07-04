@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routers import products, transactions, debtors, cash, cajas
+from routers import products, transactions, debtors, cash, cajas, documents
 from pathlib import Path
 from dotenv import load_dotenv
 from single_caja import get_or_create_single_caja
@@ -9,8 +9,8 @@ from single_caja import get_or_create_single_caja
 load_dotenv()
 
 app = FastAPI(
-    title="La Tiendita API",
-    description="Point of Sale API for La Tiendita",
+    title="Cafeteria CAM 15 API",
+    description="Point of Sale API for Cafeteria CAM 15",
     version="1.0.0"
 )
 
@@ -33,6 +33,7 @@ app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(transactions.router, prefix="/api/transactions", tags=["transactions"])
 app.include_router(debtors.router, prefix="/api/debtors", tags=["debtors"])
 app.include_router(cash.router, prefix="/api/cash", tags=["cash"])
+app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
 
 
 @app.on_event("startup")
@@ -41,7 +42,7 @@ async def ensure_single_caja() -> None:
 
 @app.get("/")
 async def root():
-    return {"message": "La Tiendita API - Point of Sale System"}
+    return {"message": "Cafeteria CAM 15 API - Point of Sale System"}
 
 @app.get("/health")
 async def health_check():

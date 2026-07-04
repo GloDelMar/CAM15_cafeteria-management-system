@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from urllib.parse import urlparse
+import re
 
 
 def _s3_enabled() -> bool:
@@ -43,6 +44,11 @@ def _build_s3_public_url(object_key: str) -> str:
     return f"https://{bucket}.s3.{region}.amazonaws.com/{object_key}"
 
 
+def _sanitize_path_component(value: str) -> str:
+    sanitized = re.sub(r"[^a-zA-Z0-9._-]", "-", value.strip())
+    return sanitized.strip("-") or "general"
+
+
 def save_product_image(unique_name: str, file_bytes: bytes, content_type: str) -> str:
     """Guarda imagen en S3 si esta configurado; si no, usa almacenamiento local."""
     if _s3_enabled():
@@ -62,6 +68,30 @@ def save_product_image(unique_name: str, file_bytes: bytes, content_type: str) -
     target_file = uploads_dir / unique_name
     target_file.write_bytes(file_bytes)
     return f"/static/products/{unique_name}"
+
+
+def save_document_file(category: str, unique_name: str, file_bytes: bytes, content_type: str) -> str:
+    """Guarda documentos generados (pdf/docx/etc.) en S3 o local."""
+    safe_category = _sanitize_path_component(category)
+    safe_name = _sanitize_path_component(unique_name)
+
+    if _s3_enabled():
+        bucket = os.getenv("AWS_S3_BUCKET")
+        object_key = f"documents/{safe_category}/{safe_name}"
+        s3_client = _get_s3_client()
+        s3_client.put_object(
+            Bucket=bucket,
+            Key=object_key,
+            Body=file_bytes,
+            ContentType=content_type,
+        )
+        return _build_s3_public_url(object_key)
+
+    uploads_dir = Path(__file__).resolve().parents[1] / "uploads" / "documents" / safe_category
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    target_file = uploads_dir / safe_name
+    target_file.write_bytes(file_bytes)
+    return f"/static/documents/{safe_category}/{safe_name}"
 
 
 def delete_product_image(image_url: str) -> None:
@@ -91,6 +121,11 @@ def delete_product_image(image_url: str) -> None:
 def get_local_product_image_path(image_url: str) -> Path:
     image_name = image_url.split("/")[-1]
     return Path(__file__).resolve().parents[1] / "uploads" / "products" / image_name
+
+
+def get_local_static_file_path(file_url: str) -> Path:
+    relative_path = file_url.replace("/static/", "", 1)
+    return Path(__file__).resolve().parents[1] / "uploads" / relative_path
 
 
 def get_s3_object_key(image_url: str) -> str:

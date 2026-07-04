@@ -1,4 +1,4 @@
-# La Tiendita - POS Web Application
+# Cafeteria CAM 15 - POS Web Application
 
 ## Project Overview
 Full-stack Point of Sale web application migrated from Kivy to modern web technologies.
@@ -6,12 +6,12 @@ Full-stack Point of Sale web application migrated from Kivy to modern web techno
 **Stack:**
 - Frontend: Next.js 14 (App Router) + TypeScript + Tailwind CSS
 - Backend: FastAPI + Python
-- Database: Supabase (PostgreSQL + Storage)
+- Database: MongoDB Atlas
 
 **Deployment:**
 - Frontend: Vercel (free tier)
 - Backend: Render (free tier)
-- Database: Supabase (free tier)
+- Database: MongoDB Atlas (free tier)
 
 ## Project Structure
 ```

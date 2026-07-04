@@ -6,7 +6,7 @@ import certifi
 load_dotenv()
 
 mongodb_uri: str = os.getenv("MONGODB_URI", "").strip()
-mongodb_db_name: str = os.getenv("MONGODB_DB", "la_tiendita").strip()
+mongodb_db_name: str = os.getenv("MONGODB_DB", "cafeteria_cam15").strip()
 mongodb_timeout_ms: int = int(os.getenv("MONGODB_SERVER_SELECTION_TIMEOUT_MS", "15000"))
 
 if not mongodb_uri:
@@ -39,6 +39,7 @@ def _initialize_indexes() -> None:
         "transactions",
         "debtors",
         "cash_operations",
+        "documents",
     ]
     for collection in collections_with_numeric_id:
         db[collection].create_index([("id", ASCENDING)], unique=True)
@@ -48,6 +49,7 @@ def _initialize_indexes() -> None:
     db.transactions.create_index([("fecha", ASCENDING)])
     db.debtors.create_index([("deuda", ASCENDING)])
     db.cash_operations.create_index([("fecha", ASCENDING)])
+    db.documents.create_index([("created_at", ASCENDING)])
 
 
 _initialize_indexes()

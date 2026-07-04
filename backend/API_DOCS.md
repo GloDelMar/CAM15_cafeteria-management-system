@@ -1,5 +1,5 @@
 """
-Backend API para La Tiendita POS
+Backend API para Cafeteria CAM 15 POS
 Documentación y guía de configuración
 """
 
@@ -39,3 +39,8 @@ Documentación y guía de configuración
 - POST   /expense?monto=X&descripcion=Y  -> Registrar egreso
 - POST   /adjust?monto=X&descripcion=Y   -> Ajustar saldo
 - GET    /stats/daily     -> Estadísticas del día
+
+## Documentos (/api/documents)
+- POST /upload -> Subir documentos generados (tickets, recibos, archivos)
+- GET  /{id} -> Obtener metadata del documento
+- GET  /{id}/content -> Descargar/visualizar contenido del documento

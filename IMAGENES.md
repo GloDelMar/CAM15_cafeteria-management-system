@@ -52,17 +52,17 @@ frontend/public/
 
 ```bash
 # Copiar monedas
-cp -r /ruta/al/proyecto/kivy/assets/monedas/* /home/glo_suarez/la_tiendita/frontend/public/monedas/
+cp -r /ruta/al/proyecto/kivy/assets/monedas/* /home/glo_suarez/cafeteria_cam15/frontend/public/monedas/
 
 # Copiar números
-cp -r /ruta/al/proyecto/kivy/assets/numeros/* /home/glo_suarez/la_tiendita/frontend/public/numeros/
+cp -r /ruta/al/proyecto/kivy/assets/numeros/* /home/glo_suarez/cafeteria_cam15/frontend/public/numeros/
 ```
 
 ### Verificar que las imágenes se copiaron:
 
 ```bash
-ls -la /home/glo_suarez/la_tiendita/frontend/public/monedas/
-ls -la /home/glo_suarez/la_tiendita/frontend/public/numeros/
+ls -la /home/glo_suarez/cafeteria_cam15/frontend/public/monedas/
+ls -la /home/glo_suarez/cafeteria_cam15/frontend/public/numeros/
 ```
 
 ## 🔄 Fallback Automático
