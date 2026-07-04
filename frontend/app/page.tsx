@@ -88,9 +88,9 @@ export default function Dashboard() {
           <Image 
             src="/cafeteria_logo.png" 
             alt="Cafetería CAM 15 Logo" 
-            width={80} 
-            height={80}
-            className="object-contain bg-white rounded-lg p-2 w-20 h-20 sm:w-24 sm:h-24"
+            width={100} 
+            height={100}
+            className="object-contain bg-white rounded-lg p-2 w-28 sm:w-32 md:w-40 h-28 sm:h-32 md:h-40"
           />
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-black">Cafetería CAM 15</h1>
