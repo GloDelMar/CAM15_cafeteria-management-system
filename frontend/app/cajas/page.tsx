@@ -97,7 +97,7 @@ export default function CajasPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando cajas...</p>
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function CajasPage() {
         <h1 className="text-3xl font-bold text-gray-900">💼 Gestión de Cajas</h1>
         <button
           onClick={openCreateModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2"
+          className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2"
         >
           <span className="text-xl">+</span>
           Nueva Caja
@@ -146,7 +146,7 @@ export default function CajasPage() {
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900"
                   required
                 />
               </div>
@@ -158,7 +158,7 @@ export default function CajasPage() {
                 <textarea
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900"
                   rows={3}
                 />
               </div>
@@ -172,7 +172,7 @@ export default function CajasPage() {
                   step="0.01"
                   value={formData.saldo_inicial}
                   onChange={(e) => setFormData({ ...formData, saldo_inicial: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900"
                 />
               </div>
 
@@ -199,7 +199,7 @@ export default function CajasPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold"
+                  className="flex-1 bg-blue-900 hover:bg-blue-800 text-white py-2 rounded-lg font-bold"
                 >
                   {editingCaja ? 'Actualizar' : 'Crear'}
                 </button>
@@ -239,16 +239,16 @@ function CajaCard({ caja, onEdit, onToggleActiva }: {
 
   return (
     <div className={`bg-white rounded-xl shadow-md overflow-hidden border-2 ${
-      caja.activa ? 'border-green-300' : 'border-gray-300'
+      caja.activa ? 'border-emerald-400' : 'border-gray-300'
     }`}>
       {/* Header */}
       <div className={`p-4 ${
-        caja.activa ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gray-400'
+        caja.activa ? 'bg-emerald-700' : 'bg-gray-400'
       }`}>
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold text-white">{caja.nombre}</h3>
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-            caja.activa ? 'bg-white text-green-600' : 'bg-gray-600 text-white'
+            caja.activa ? 'bg-white text-emerald-700' : 'bg-gray-600 text-white'
           }`}>
             {caja.activa ? '✓ Activa' : '✗ Inactiva'}
           </span>
@@ -264,14 +264,14 @@ function CajaCard({ caja, onEdit, onToggleActiva }: {
         <div className="space-y-3 mb-4">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Saldo Actual:</span>
-            <span className="text-xl font-bold text-green-600">
+            <span className="text-xl font-bold text-emerald-700">
               {saldo !== null ? formatCurrency(saldo) : '...'}
             </span>
           </div>
 
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Productos:</span>
-            <span className="text-lg font-semibold text-blue-600">{productos}</span>
+            <span className="text-lg font-semibold text-blue-900">{productos}</span>
           </div>
 
           <div className="flex justify-between items-center">
@@ -286,7 +286,7 @@ function CajaCard({ caja, onEdit, onToggleActiva }: {
         <div className="flex gap-2 pt-4 border-t">
           <button
             onClick={() => onEdit(caja)}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-bold"
+            className="flex-1 bg-blue-900 hover:bg-blue-800 text-white py-2 rounded-lg text-sm font-bold"
           >
             ✏️ Editar
           </button>
@@ -295,7 +295,7 @@ function CajaCard({ caja, onEdit, onToggleActiva }: {
             className={`flex-1 py-2 rounded-lg text-sm font-bold ${
               caja.activa
                 ? 'bg-red-100 hover:bg-red-200 text-red-700'
-                : 'bg-green-100 hover:bg-green-200 text-green-700'
+                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
             }`}
           >
             {caja.activa ? '🔒 Desactivar' : '🔓 Activar'}

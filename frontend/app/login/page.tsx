@@ -26,11 +26,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-emerald-600 to-amber-600 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full">
         {/* Logo y título */}
         <div className="text-center mb-8">
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
+          <div className="bg-blue-900 w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
             <span className="text-5xl">🏪</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">La Tiendita</h1>
@@ -53,7 +53,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-900 focus:border-blue-900 transition-all"
               placeholder="Ingresa la contraseña"
               required
               autoFocus
@@ -62,7 +62,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
+            <div className="bg-red-50 border-2 border-red-300 text-red-800 px-4 py-3 rounded-xl flex items-center gap-2">
               <span className="text-xl">⚠️</span>
               <span className="font-medium">{error}</span>
             </div>
@@ -71,7 +71,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

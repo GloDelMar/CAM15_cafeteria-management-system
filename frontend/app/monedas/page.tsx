@@ -176,11 +176,11 @@ function MonedasContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
             <div className="bg-blue-100 rounded-2xl p-6 text-center">
               <p className="text-xl font-semibold text-blue-900 mb-2">Total a pagar</p>
-              <p className="text-4xl font-bold text-blue-600">{formatCurrency(total)}</p>
+              <p className="text-4xl font-bold text-blue-900">{formatCurrency(total)}</p>
             </div>
             <div className="bg-green-100 rounded-2xl p-6">
               <p className="text-xl font-semibold text-green-900 mb-2 text-center">Pagas con</p>
-              <p className="text-4xl font-bold text-green-600 text-center mb-3">{formatCurrency(totalSeleccionado)}</p>
+              <p className="text-4xl font-bold text-emerald-700 text-center mb-3">{formatCurrency(totalSeleccionado)}</p>
               {Object.keys(cantidades).some(k => cantidades[parseFloat(k)] > 0) && (
                 <div className="flex flex-wrap gap-2 justify-center mt-3">
                   {Object.entries(cantidades)
@@ -224,7 +224,7 @@ function MonedasContent() {
               return (
                 <div
                   key={denom.valor}
-                  className={`${denom.color} rounded-2xl p-4 shadow-lg border-4 ${cantidad > 0 ? 'border-blue-500 ring-4 ring-blue-300' : 'border-gray-300'} transition-all`}
+                  className={`${denom.color} rounded-2xl p-4 shadow-lg border-4 ${cantidad > 0 ? 'border-blue-900 ring-4 ring-blue-300' : 'border-gray-300'} transition-all`}
                 >
                   <div className="text-center">
                     <div 

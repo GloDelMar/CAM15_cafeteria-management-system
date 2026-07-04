@@ -100,11 +100,11 @@ export default function CajaPage() {
     switch (type) {
       case 'INGRESO':
       case 'VENTA':
-        return 'text-green-600 bg-green-50';
+        return 'text-emerald-700 bg-green-50';
       case 'EGRESO':
         return 'text-red-600 bg-red-50';
       case 'AJUSTE':
-        return 'text-blue-600 bg-blue-50';
+        return 'text-blue-900 bg-blue-50';
       default:
         return 'text-gray-600 bg-gray-50';
     }
@@ -113,7 +113,7 @@ export default function CajaPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
       </div>
     );
   }
@@ -155,7 +155,7 @@ export default function CajaPage() {
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-green-600">
           <p className="text-sm text-gray-600 mb-2 font-medium">📈 Ingresos del Día</p>
-          <p className="text-3xl font-bold text-green-600">{formatCurrency(stats.ingresos)}</p>
+          <p className="text-3xl font-bold text-emerald-700">{formatCurrency(stats.ingresos)}</p>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 border-l-4 border-red-600">
           <p className="text-sm text-gray-600 mb-2 font-medium">📉 Egresos del Día</p>
@@ -227,7 +227,7 @@ export default function CajaPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <span className={`font-bold text-lg ${
-                      op.tipo_operacion === 'EGRESO' ? 'text-red-600' : 'text-green-600'
+                      op.tipo_operacion === 'EGRESO' ? 'text-red-600' : 'text-emerald-700'
                     }`}>
                       {op.tipo_operacion === 'EGRESO' ? '-' : '+'}{formatCurrency(Math.abs(op.monto))}
                     </span>

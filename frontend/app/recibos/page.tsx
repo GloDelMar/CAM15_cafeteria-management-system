@@ -168,7 +168,7 @@ export default function RecibosPage() {
             }}
             className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${
               viewMode === 'maestros'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-blue-900 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -183,7 +183,7 @@ export default function RecibosPage() {
             }}
             className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${
               viewMode === 'todas'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-blue-900 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -198,7 +198,7 @@ export default function RecibosPage() {
               <select
                 value={selectedTeacher}
                 onChange={(e) => setSelectedTeacher(e.target.value)}
-                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900"
               >
                 <option value="">Seleccionar maestro...</option>
                 {maestrosConCredito.map((maestro, idx) => (
@@ -210,7 +210,7 @@ export default function RecibosPage() {
               <button
                 onClick={loadTeacherData}
                 disabled={!selectedTeacher || loading}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {loading ? 'Cargando...' : 'Cargar Datos'}
               </button>
@@ -259,15 +259,15 @@ export default function RecibosPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-lg p-4">
               <p className="text-sm text-gray-600">Total Transacciones</p>
-              <p className="text-2xl font-bold text-blue-600">{teacherSummary.total_transactions}</p>
+              <p className="text-2xl font-bold text-blue-900">{teacherSummary.total_transactions}</p>
             </div>
             <div className="bg-white rounded-lg p-4">
               <p className="text-sm text-gray-600">Monto Total</p>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(teacherSummary.total_amount)}</p>
+              <p className="text-2xl font-bold text-blue-900">{formatCurrency(teacherSummary.total_amount)}</p>
             </div>
             <div className="bg-white rounded-lg p-4">
               <p className="text-sm text-gray-600">Total Pagado</p>
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(teacherSummary.total_paid)}</p>
+              <p className="text-2xl font-bold text-emerald-700">{formatCurrency(teacherSummary.total_paid)}</p>
             </div>
             <div className="bg-white rounded-lg p-4">
               <p className="text-sm text-gray-600">Total Pendiente</p>
@@ -295,7 +295,7 @@ export default function RecibosPage() {
                 <button
                   onClick={() => handleGenerateConsolidatedReceipt(false)}
                   disabled={selectedTransactions.size === 0}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-bold disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   📥 Descargar Recibo Consolidado ({selectedTransactions.size} tickets)
                 </button>
@@ -325,7 +325,7 @@ export default function RecibosPage() {
                 key={transaction.id}
                 className={`border-2 rounded-lg p-4 transition-all ${
                   selectedTransactions.has(transaction.id)
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-blue-900 bg-blue-50'
                     : 'border-gray-200 hover:border-blue-300'
                 }`}
               >
@@ -346,7 +346,7 @@ export default function RecibosPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-blue-600">
+                        <p className="text-2xl font-bold text-blue-900">
                           {formatCurrency(transaction.total)}
                         </p>
                         <span
@@ -381,7 +381,7 @@ export default function RecibosPage() {
                       </button>
                       <button
                         onClick={() => handleGenerateIndividualReceipt(transaction, true)}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold"
+                        className="flex-1 bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-bold"
                       >
                         🖨️ Imprimir
                       </button>

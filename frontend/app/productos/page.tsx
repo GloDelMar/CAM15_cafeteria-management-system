@@ -141,7 +141,7 @@ export default function ProductsPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando productos...</p>
         </div>
       </div>
@@ -155,13 +155,13 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Productos</h1>
           {selectedCaja && (
             <p className="text-sm text-gray-600 mt-1">
-              Caja: <span className="font-semibold text-blue-600">{selectedCaja.nombre}</span>
+              Caja: <span className="font-semibold text-blue-900">{selectedCaja.nombre}</span>
             </p>
           )}
         </div>
         <button
           onClick={openNewModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+          className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-2 rounded-lg font-medium transition-colors"
         >
           + Nuevo Producto
         </button>
@@ -191,7 +191,7 @@ export default function ProductsPage() {
             </div>
             <div className="p-4">
               <h3 className="font-semibold text-lg text-gray-900 mb-2">{product.name}</h3>
-              <p className="text-2xl font-bold text-blue-600 mb-2">{formatCurrency(product.price)}</p>
+              <p className="text-2xl font-bold text-blue-900 mb-2">{formatCurrency(product.price)}</p>
               {product.caja_id && (
                 <p className="text-sm text-gray-600 mb-4">
                   🏪 {cajas.find(c => c.id === product.caja_id)?.nombre || 'Caja desconocida'}
@@ -221,7 +221,7 @@ export default function ProductsPage() {
           <p className="text-gray-500 text-lg">No hay productos registrados</p>
           <button
             onClick={openNewModal}
-            className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+            className="mt-4 text-blue-900 hover:text-blue-700 font-medium"
           >
             Crear el primero
           </button>
@@ -244,7 +244,7 @@ export default function ProductsPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                   placeholder="Ej: Coca Cola 600ml"
                   required
                 />
@@ -258,7 +258,7 @@ export default function ProductsPage() {
                   step="0.01"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                   placeholder="0.00"
                   required
                 />
@@ -297,7 +297,7 @@ export default function ProductsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="flex-1 bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   {editingProduct ? 'Actualizar' : 'Crear'}
                 </button>

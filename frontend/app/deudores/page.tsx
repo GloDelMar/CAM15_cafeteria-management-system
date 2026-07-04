@@ -107,7 +107,7 @@ export default function DeudoresPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
       </div>
     );
   }
@@ -138,7 +138,7 @@ export default function DeudoresPage() {
         placeholder="Buscar por nombre o grupo..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-6 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-6 focus:ring-2 focus:ring-blue-900 focus:border-transparent"
       />
 
       {/* Lista de deudores */}
@@ -189,7 +189,7 @@ export default function DeudoresPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => openPayModal(debtor)}
-                        className="text-green-600 hover:text-green-900 mr-4"
+                        className="text-emerald-700 hover:text-green-900 mr-4"
                       >
                         Pagar
                       </button>
@@ -230,7 +230,7 @@ export default function DeudoresPage() {
                 step="0.01"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                 placeholder="0.00"
                 max={selectedDebtor.deuda}
               />

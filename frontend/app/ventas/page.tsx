@@ -556,7 +556,7 @@ export default function VentasPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
       </div>
     );
   }
@@ -593,8 +593,8 @@ export default function VentasPage() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-3 rounded-lg font-bold whitespace-nowrap transition-all focus:outline-none focus:ring-4 focus:ring-offset-2 ${
                   selectedCategory === cat
-                    ? 'bg-blue-900 text-white shadow-lg focus:ring-blue-500'
-                    : 'bg-white text-gray-700 border-2 border-blue-300 hover:border-blue-700 hover:bg-amber-50 focus:ring-blue-500'
+                    ? 'bg-blue-900 text-white shadow-lg focus:ring-blue-900'
+                    : 'bg-white text-gray-700 border-2 border-blue-300 hover:border-blue-700 hover:bg-amber-50 focus:ring-blue-900'
                 }`}
                 aria-pressed={selectedCategory === cat}
               >
@@ -701,7 +701,7 @@ export default function VentasPage() {
                         </button>
                         <button
                           onClick={() => openQuantityModal(item.product)}
-                          className="w-8 sm:w-10 text-center font-bold text-sm sm:text-lg bg-white rounded-md py-0.5 border-2 border-blue-300 hover:border-blue-500"
+                          className="w-8 sm:w-10 text-center font-bold text-sm sm:text-lg bg-white rounded-md py-0.5 border-2 border-blue-300 hover:border-blue-900"
                         >
                           {item.quantity}
                         </button>
@@ -736,14 +736,14 @@ export default function VentasPage() {
                       placeholder="👤 Nombre del cliente"
                       value={cliente}
                       onChange={(e) => setCliente(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-blue-900"
                     />
                     <input
                       type="text"
                       placeholder="👥 Grupo (opcional)"
                       value={grupo}
                       onChange={(e) => setGrupo(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-blue-900"
                     />
                     <button
                       onClick={() => {
@@ -751,7 +751,7 @@ export default function VentasPage() {
                         setCliente('');
                         setGrupo('');
                       }}
-                      className="text-xs sm:text-sm text-blue-600 hover:text-blue-800"
+                      className="text-xs sm:text-sm text-blue-900 hover:text-blue-800"
                     >
                       ← Volver a lista de maestros
                     </button>
@@ -774,7 +774,7 @@ export default function VentasPage() {
                           setGrupo('');
                         }
                       }}
-                      className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                      className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-blue-900 bg-white"
                     >
                       <option value="">👤 Seleccionar maestro (opcional)</option>
                       {maestrosConCredito.map((maestro, idx) => (
@@ -823,7 +823,7 @@ export default function VentasPage() {
                           setSelectedCoins([]); // Limpiar monedas si escribe manualmente
                         setChangeSuggestionIndex(0); // Reset suggestion index on payment change
                       }}
-                      className="flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base md:text-lg border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 sm:focus:ring-4 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base md:text-lg border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 sm:focus:ring-4 focus:ring-blue-900 focus:border-blue-900"
                     />
                     {parseFloat(payment) > calculateTotal() && (
                       <button
@@ -850,7 +850,7 @@ export default function VentasPage() {
               className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg shadow-lg transition-all ${
                 cart.length === 0 || isProcessing
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white hover:scale-105'
+                  : 'bg-emerald-700 hover:from-green-600 hover:to-green-700 text-white hover:scale-105'
               }`}
             >
               {isProcessing ? '⏳ Procesando...' : '✅ Completar Venta'}
@@ -880,7 +880,7 @@ export default function VentasPage() {
 
             <div className="bg-white rounded-lg p-3 mb-4 border-l-4 border-blue-600">
               <p className="text-base font-bold text-gray-900">{selectedProduct.nombre}</p>
-              <p className="text-lg font-bold text-blue-600">{formatCurrency(selectedProduct.precio)}</p>
+              <p className="text-lg font-bold text-blue-900">{formatCurrency(selectedProduct.precio)}</p>
             </div>
 
             {/* Ingredientes / Opciones */}
@@ -1040,7 +1040,7 @@ export default function VentasPage() {
 
             <button
               onClick={() => setShowChangeSuggestionModal(false)}
-              className="w-full mt-3 sm:mt-4 md:mt-6 bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-lg font-bold transition-colors"
+              className="w-full mt-3 sm:mt-4 md:mt-6 bg-blue-900 hover:bg-blue-900 text-white px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-lg font-bold transition-colors"
             >
               ✅ Cerrar
             </button>
