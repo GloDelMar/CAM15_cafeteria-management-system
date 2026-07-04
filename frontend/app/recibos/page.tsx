@@ -374,6 +374,16 @@ export default function RecibosPage() {
 
                     <div className="flex gap-2">
                       <button
+                        onClick={() => {
+                          const ticketUrl = transactionsApi.getTicketDownloadUrl(transaction.id);
+                          window.open(ticketUrl, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-bold"
+                        title="Descargar ticket guardado para imprimir"
+                      >
+                        🧾 Ticket (imprimir)
+                      </button>
+                      <button
                         onClick={() => handleGenerateIndividualReceipt(transaction, false)}
                         className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-bold"
                       >

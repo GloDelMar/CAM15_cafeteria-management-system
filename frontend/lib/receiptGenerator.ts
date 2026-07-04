@@ -6,6 +6,11 @@ interface Product {
   cantidad: number;
   precio_unitario: number;
   subtotal: number;
+  opciones?: Array<{
+    group_key: string;
+    group_label: string;
+    values: string[];
+  }>;
 }
 
 interface Transaction {
@@ -28,6 +33,22 @@ export function generateReceipt(transaction: Transaction) {
   });
 
   let yPos = 10;
+
+  const optionValueLabels: Record<string, string> = {
+    mayonesa: 'Mayonesa',
+    crema: 'Crema',
+    sin_mayonesa_crema: 'Sin mayonesa ni crema',
+    cebolla: 'Cebolla',
+    jitomate: 'Jitomate',
+    lechuga: 'Lechuga',
+    chile: 'Chile',
+    fria: 'Fría',
+    caliente: 'Caliente',
+    con_azucar: 'Con azúcar',
+    sin_azucar: 'Sin azúcar',
+  };
+
+  const formatOptionValue = (value: string) => optionValueLabels[value] || value;
 
   // Logo
   try {
@@ -97,6 +118,18 @@ export function generateReceipt(transaction: Transaction) {
     const linea = `  ${producto.cantidad} x $${producto.precio_unitario.toFixed(2)} = $${producto.subtotal.toFixed(2)}`;
     doc.text(linea, 5, yPos);
     yPos += 5;
+
+    if (producto.opciones && producto.opciones.length > 0) {
+      producto.opciones.forEach((opcion) => {
+        if (!opcion.values || opcion.values.length === 0) return;
+        const valuesText = opcion.values.map(formatOptionValue).join(', ');
+        doc.setFontSize(6);
+        doc.text(`   - ${opcion.group_label}: ${valuesText}`, 5, yPos);
+        yPos += 3;
+      });
+      doc.setFontSize(7);
+      yPos += 1;
+    }
   });
 
   yPos += 2;

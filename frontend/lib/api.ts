@@ -104,7 +104,18 @@ export const productsApi = {
     return res.json();
   },
   
-  create: async (product: { name: string; price: number; image_url?: string; caja_id?: number }) => {
+  create: async (
+    product: {
+      name: string;
+      price: number;
+      image_url?: string;
+      caja_id?: number;
+      category?: 'alimentos' | 'bebidas' | 'postres';
+      beverage_type?: 'fria' | 'caliente' | 'ambas' | null;
+      beverage_flavors_enabled?: boolean;
+      beverage_flavors?: string[];
+    }
+  ) => {
     const res = await fetch(`${API_URL}/api/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -114,7 +125,19 @@ export const productsApi = {
     return res.json();
   },
   
-  update: async (id: number, product: Partial<{ name: string; price: number; image_url: string; caja_id: number }>) => {
+  update: async (
+    id: number,
+    product: Partial<{
+      name: string;
+      price: number;
+      image_url: string;
+      caja_id: number;
+      category: 'alimentos' | 'bebidas' | 'postres';
+      beverage_type: 'fria' | 'caliente' | 'ambas' | null;
+      beverage_flavors_enabled: boolean;
+      beverage_flavors: string[];
+    }>
+  ) => {
     const res = await fetch(`${API_URL}/api/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -146,6 +169,10 @@ export const productsApi = {
 
 // Transacciones
 export const transactionsApi = {
+  getTicketDownloadUrl: (transactionId: number) => {
+    return `${API_URL}/api/transactions/${transactionId}/ticket/download`;
+  },
+
   getAll: async (filters?: {
     skip?: number;
     limit?: number;
@@ -182,6 +209,13 @@ export const transactionsApi = {
       cantidad: number;
       precio_unitario: number;
       subtotal: number;
+      product_id?: number;
+      image_url?: string;
+      opciones?: Array<{
+        group_key: string;
+        group_label: string;
+        values: string[];
+      }>;
     }>;
     total: number;
     pago: number;

@@ -13,6 +13,8 @@ interface Product {
   image_url?: string;
   category?: string; // alimentos, bebidas, postres
   beverage_type?: string; // fria, caliente, ambas
+  beverage_flavors_enabled?: boolean;
+  beverage_flavors?: string[];
   created_at: string;
   caja_id?: number;
 }
@@ -32,7 +34,16 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    price: '',
+    caja_id: '',
+    category: 'alimentos',
+    beverage_type: '',
+    beverage_flavors_enabled: false,
+    beverage_flavors: [] as string[],
+  });
+  const [newFlavorInput, setNewFlavorInput] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -85,8 +96,13 @@ export default function ProductsPage() {
         name: formData.name,
         price: parseFloat(formData.price),
         caja_id: selectedCaja.id, // Asignar automáticamente la caja seleccionada
-        category: formData.category || null,
-        beverage_type: formData.beverage_type || null,
+        category: formData.category || 'alimentos',
+        beverage_type: formData.category === 'bebidas' ? (formData.beverage_type || null) : null,
+        beverage_flavors_enabled: formData.category === 'bebidas' ? formData.beverage_flavors_enabled : false,
+        beverage_flavors:
+          formData.category === 'bebidas' && formData.beverage_flavors_enabled
+            ? formData.beverage_flavors
+            : [],
       };
 
       let savedProduct;
@@ -103,7 +119,16 @@ export default function ProductsPage() {
 
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
+      setFormData({
+        name: '',
+        price: '',
+        caja_id: '',
+        category: 'alimentos',
+        beverage_type: '',
+        beverage_flavors_enabled: false,
+        beverage_flavors: [],
+      });
+      setNewFlavorInput('');
       setImageFile(null);
       loadProducts();
     } catch (error) {
@@ -130,18 +155,71 @@ export default function ProductsPage() {
       name: product.name, 
       price: product.price.toString(),
       caja_id: product.caja_id?.toString() || '',
-      category: product.category || '',
-      beverage_type: product.beverage_type || ''
+      category: product.category || 'alimentos',
+      beverage_type: product.beverage_type || '',
+      beverage_flavors_enabled: !!product.beverage_flavors_enabled,
+      beverage_flavors: product.beverage_flavors || [],
     });
+    setNewFlavorInput('');
     setShowModal(true);
   }
 
   function openNewModal() {
     setEditingProduct(null);
-    setFormData({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
+    setFormData({
+      name: '',
+      price: '',
+      caja_id: '',
+      category: 'alimentos',
+      beverage_type: '',
+      beverage_flavors_enabled: false,
+      beverage_flavors: [],
+    });
+    setNewFlavorInput('');
     setImageFile(null);
     setShowModal(true);
   }
+
+  const normalizeFlavorName = (value: string) =>
+    value
+      .trim()
+      .replace(/\s+/g, ' ');
+
+  const flavorImagePath = (value: string) => {
+    const normalized = value
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    return `/sabores/${normalized}.png`;
+  };
+
+  const addFlavor = () => {
+    const flavor = normalizeFlavorName(newFlavorInput);
+    if (!flavor) return;
+
+    const alreadyExists = formData.beverage_flavors.some(
+      (item) => item.toLowerCase() === flavor.toLowerCase()
+    );
+    if (alreadyExists) {
+      setNewFlavorInput('');
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      beverage_flavors: [...formData.beverage_flavors, flavor],
+    });
+    setNewFlavorInput('');
+  };
+
+  const removeFlavor = (flavorToRemove: string) => {
+    setFormData({
+      ...formData,
+      beverage_flavors: formData.beverage_flavors.filter((item) => item !== flavorToRemove),
+    });
+  };
 
   if (loading) {
     return (
@@ -206,6 +284,11 @@ export default function ProductsPage() {
               {product.beverage_type && (
                 <p className="text-sm text-gray-600 mb-2">
                   {product.beverage_type === 'fria' ? '❄️' : product.beverage_type === 'caliente' ? '☕' : '🔄'} {product.beverage_type.charAt(0).toUpperCase() + product.beverage_type.slice(1)}
+                </p>
+              )}
+              {product.beverage_flavors_enabled && (product.beverage_flavors || []).length > 0 && (
+                <p className="text-sm text-gray-600 mb-2">
+                  🍓 Sabores: {(product.beverage_flavors || []).join(', ')}
                 </p>
               )}
               {product.caja_id && (
@@ -294,10 +377,17 @@ export default function ProductsPage() {
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value, beverage_type: '' })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      category: e.target.value,
+                      beverage_type: '',
+                      beverage_flavors_enabled: false,
+                      beverage_flavors: [],
+                    })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                 >
-                  <option value="">Selecciona categoría</option>
                   <option value="alimentos">🍔 Alimentos</option>
                   <option value="bebidas">🍹 Bebidas</option>
                   <option value="postres">🍰 Postres</option>
@@ -313,12 +403,94 @@ export default function ProductsPage() {
                     value={formData.beverage_type}
                     onChange={(e) => setFormData({ ...formData, beverage_type: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                    required
                   >
                     <option value="">Selecciona tipo</option>
                     <option value="fria">❄️ Fría</option>
                     <option value="caliente">☕ Caliente</option>
                     <option value="ambas">🔄 Ambas</option>
                   </select>
+                </div>
+              )}
+
+              {formData.category === 'bebidas' && (
+                <div className="mb-4">
+                  <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={formData.beverage_flavors_enabled}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          beverage_flavors_enabled: e.target.checked,
+                          beverage_flavors: e.target.checked ? formData.beverage_flavors : [],
+                        })
+                      }
+                      className="w-4 h-4"
+                    />
+                    Permitir saborización
+                  </label>
+                </div>
+              )}
+
+              {formData.category === 'bebidas' && formData.beverage_flavors_enabled && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sabores disponibles
+                  </label>
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={newFlavorInput}
+                      onChange={(e) => setNewFlavorInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addFlavor();
+                        }
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                      placeholder="Ej: fresa"
+                    />
+                    <button
+                      type="button"
+                      onClick={addFlavor}
+                      className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg font-medium"
+                    >
+                      + Agregar
+                    </button>
+                  </div>
+
+                  {formData.beverage_flavors.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {formData.beverage_flavors.map((flavor) => (
+                        <div
+                          key={flavor}
+                          className="flex items-center gap-2 px-2 py-2 rounded-lg border border-blue-200 bg-blue-50"
+                        >
+                          <img
+                            src={flavorImagePath(flavor)}
+                            alt={flavor}
+                            className="w-8 h-8 object-contain"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                          <span className="text-sm font-semibold text-blue-900 flex-1 truncate">{flavor}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeFlavor(flavor)}
+                            className="text-red-600 hover:text-red-800 font-bold"
+                            aria-label={`Eliminar sabor ${flavor}`}
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-600">Aún no hay sabores agregados.</p>
+                  )}
                 </div>
               )}
               <div className="mb-6">
@@ -338,7 +510,16 @@ export default function ProductsPage() {
                   onClick={() => {
                     setShowModal(false);
                     setEditingProduct(null);
-                    setFormData({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
+                    setFormData({
+                      name: '',
+                      price: '',
+                      caja_id: '',
+                      category: 'alimentos',
+                      beverage_type: '',
+                      beverage_flavors_enabled: false,
+                      beverage_flavors: [],
+                    });
+                    setNewFlavorInput('');
                     setImageFile(null);
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

@@ -105,6 +105,15 @@ a:visited {
   color: var(--primary-cafe-dark);
 }
 
+/* Top bar: enlaces de navegación sin subrayado y sin color de visitado forzado */
+.topbar-nav a,
+.topbar-nav a:hover,
+.topbar-nav a:focus,
+.topbar-nav a:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* Reducir animaciones para usuarios sensibles */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { productsApi, transactionsApi, debtorsApi, resolveImageUrl, resolveProductImageUrl } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import NumeroSelector from '@/components/NumeroSelector';
-import { downloadReceipt, printReceipt } from '@/lib/receiptGenerator';
 import { useCaja } from '@/contexts/CajaContext';
 
 interface Product {
@@ -17,6 +16,8 @@ interface Product {
   caja_id?: number;
   category?: string;
   beverage_type?: string;
+  beverage_flavors_enabled?: boolean;
+  beverage_flavors?: string[];
   option_groups?: ProductOptionGroup[];
 }
 
@@ -28,6 +29,7 @@ interface ProductOptionGroup {
 }
 
 interface CartItem {
+  lineId: string;
   product: Product;
   quantity: number;
   selectedOptions?: Record<string, string[]>;
@@ -36,7 +38,7 @@ interface CartItem {
 export default function VentasPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { selectedCaja } = useCaja();
+  const { selectedCaja, isLoading: cajaLoading } = useCaja();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,12 +53,109 @@ export default function VentasPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(0);
   const [selectedIngredients, setSelectedIngredients] = useState<Record<string, string[]>>({});
+  const [editingLineId, setEditingLineId] = useState<string | null>(null);
   const [changeSuggestionIndex, setChangeSuggestionIndex] = useState(0);
   const [showCustomClientInput, setShowCustomClientInput] = useState(false);
   const [showChangeSuggestionModal, setShowChangeSuggestionModal] = useState(false);
   const [changeSuggestions, setChangeSuggestions] = useState<Array<{ [key: number]: number }>>([]);
   const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const OPTION_GROUP_LABELS: Record<string, string> = {
+    salsa: 'Mayonesa o crema',
+    verduras: 'Verduras',
+    temperatura: 'Temperatura',
+    azucar: 'Azúcar',
+    sabores: 'Sabores',
+  };
+
+  const OPTION_VALUE_LABELS: Record<string, string> = {
+    mayonesa: 'Mayonesa',
+    crema: 'Crema',
+    sin_mayonesa_crema: 'Sin mayonesa ni crema',
+    cebolla: 'Cebolla',
+    jitomate: 'Jitomate',
+    lechuga: 'Lechuga',
+    chile: 'Chile',
+    fria: 'Fría',
+    caliente: 'Caliente',
+    con_azucar: 'Con azúcar',
+    sin_azucar: 'Sin azúcar',
+    sin_sabor: 'Sin sabor',
+  };
+
+  const OPTION_IMAGE_BY_VALUE: Record<string, string> = {
+    mayonesa: '/mayonesa.png',
+    crema: '/crema.png',
+    cebolla: '/cebolla.png',
+    jitomate: '/jitomate.png',
+    lechuga: '/lechuga.png',
+    chile: '/chile.png',
+    fria: '/frio.png',
+    caliente: '/caliente.png',
+    sin_azucar: '/sin-azucar.png',
+    sin_sabor: '/sin-azucar.png',
+  };
+
+  const formatFlavorKey = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  const formatDynamicOptionLabel = (value: string) => {
+    if (OPTION_VALUE_LABELS[value]) return OPTION_VALUE_LABELS[value];
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  };
+
+  const getOptionImage = (value: string) => {
+    if (OPTION_IMAGE_BY_VALUE[value]) return OPTION_IMAGE_BY_VALUE[value];
+    return `/sabores/${formatFlavorKey(value)}.png`;
+  };
+
+  const getTemperatureChoices = (product: Product): string[] => {
+    if (product.beverage_type === 'fria') return ['fria'];
+    if (product.beverage_type === 'caliente') return ['caliente'];
+    return ['fria', 'caliente'];
+  };
+
+  const mapSelectedOptionsToTransactionOptions = (selectedOptions?: Record<string, string[]>) => {
+    if (!selectedOptions) return [];
+    return Object.entries(selectedOptions)
+      .filter(([, values]) => values.length > 0)
+      .map(([groupKey, values]) => ({
+        group_key: groupKey,
+        group_label: OPTION_GROUP_LABELS[groupKey] || groupKey,
+        values,
+      }));
+  };
+
+  const formatOptionValue = (value: string) => formatDynamicOptionLabel(value);
+
+  const createLineId = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
+
+  const getOptionsSignature = (selectedOptions?: Record<string, string[]>) => {
+    if (!selectedOptions) return '{}';
+
+    const normalized = Object.keys(selectedOptions)
+      .sort()
+      .reduce<Record<string, string[]>>((acc, key) => {
+        const values = (selectedOptions[key] || []).slice().sort();
+        if (values.length > 0) {
+          acc[key] = values;
+        }
+        return acc;
+      }, {});
+
+    return JSON.stringify(normalized);
+  };
 
   // Denominaciones de monedas y billetes
   const DENOMINACIONES = [
@@ -95,6 +194,10 @@ export default function VentasPage() {
   };
 
   useEffect(() => {
+    if (cajaLoading) {
+      return;
+    }
+
     // Redirigir al dashboard si no hay caja seleccionada
     if (!selectedCaja) {
       router.push('/');
@@ -107,7 +210,12 @@ export default function VentasPage() {
     const savedCart = localStorage.getItem('ventas_cart');
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsedCart = JSON.parse(savedCart) as CartItem[];
+        const migratedCart = parsedCart.map((item) => ({
+          ...item,
+          lineId: item.lineId || createLineId(),
+        }));
+        setCart(migratedCart);
       } catch (e) {
         console.error('Error loading cart from localStorage:', e);
       }
@@ -126,7 +234,7 @@ export default function VentasPage() {
         console.error('Error parsing monedas:', e);
       }
     }
-  }, [searchParams, selectedCaja, router]);
+  }, [searchParams, selectedCaja, cajaLoading, router]);
 
   // Guardar carrito en localStorage cada vez que cambie
   useEffect(() => {
@@ -169,7 +277,9 @@ export default function VentasPage() {
         image_url: p.image_url,
         caja_id: p.caja_id,
         category: p.category || 'alimentos',
-        beverage_type: p.beverage_type || null
+        beverage_type: p.beverage_type || null,
+        beverage_flavors_enabled: !!p.beverage_flavors_enabled,
+        beverage_flavors: Array.isArray(p.beverage_flavors) ? p.beverage_flavors : [],
       }));
       
       console.log('[VENTAS] 🔄 Productos mapeados:', mappedProducts);
@@ -188,59 +298,153 @@ export default function VentasPage() {
     }
   }
 
-  const openQuantityModal = (product: Product) => {
+  const openQuantityModal = (product: Product, existingItem?: CartItem) => {
     setSelectedProduct(product);
-    const existingItem = cart.find(item => item.product.id === product.id);
-    setSelectedQuantity(existingItem?.quantity || 0);
-    setSelectedIngredients(existingItem?.selectedOptions || {});
+    const initialQuantity = existingItem?.quantity || (product.category === 'postres' ? 0 : 1);
+    const initialOptions = { ...(existingItem?.selectedOptions || {}) };
+    setEditingLineId(existingItem?.lineId || null);
+
+    if (product.category === 'bebidas') {
+      const allowedTemperatures = getTemperatureChoices(product);
+      if (allowedTemperatures.length === 1) {
+        initialOptions.temperatura = [allowedTemperatures[0]];
+      } else if (initialOptions.temperatura?.length) {
+        initialOptions.temperatura = initialOptions.temperatura.filter((value) => allowedTemperatures.includes(value));
+      } else {
+        initialOptions.temperatura = [allowedTemperatures[0]];
+      }
+
+      if (!initialOptions.azucar || initialOptions.azucar.length === 0) {
+        initialOptions.azucar = ['con_azucar'];
+      }
+
+      if (product.beverage_flavors_enabled && (product.beverage_flavors || []).length > 0) {
+        if (!initialOptions.sabores || initialOptions.sabores.length === 0) {
+          initialOptions.sabores = ['sin_sabor'];
+        }
+      }
+    }
+
+    setSelectedQuantity(initialQuantity);
+    setSelectedIngredients(initialOptions);
     setShowIngredientsModal(true);
   };
 
   const confirmQuantity = () => {
     if (!selectedProduct || selectedQuantity === 0) {
       setShowIngredientsModal(false);
+      setEditingLineId(null);
       return;
     }
 
-    const existing = cart.find(item => item.product.id === selectedProduct.id);
-    if (existing) {
+    const nextQuantity = Math.min(selectedQuantity, selectedProduct.stock);
+    const nextSignature = getOptionsSignature(selectedIngredients);
+
+    if (editingLineId) {
       setCart(cart.map(item =>
-        item.product.id === selectedProduct.id
-          ? { 
-              ...item, 
-              quantity: Math.min(selectedQuantity, selectedProduct.stock),
-              selectedOptions: selectedIngredients 
+        item.lineId === editingLineId
+          ? {
+              ...item,
+              quantity: nextQuantity,
+              selectedOptions: selectedIngredients,
             }
           : item
       ));
     } else {
-      setCart([...cart, { 
-        product: selectedProduct, 
-        quantity: Math.min(selectedQuantity, selectedProduct.stock),
-        selectedOptions: selectedIngredients
-      }]);
+      const existingSameLine = cart.find(item =>
+        item.product.id === selectedProduct.id &&
+        getOptionsSignature(item.selectedOptions) === nextSignature
+      );
+
+      if (existingSameLine) {
+        setCart(cart.map(item =>
+          item.lineId === existingSameLine.lineId
+            ? {
+                ...item,
+                quantity: Math.min(item.quantity + nextQuantity, item.product.stock),
+              }
+            : item
+        ));
+      } else {
+        setCart([...cart, {
+          lineId: createLineId(),
+          product: selectedProduct,
+          quantity: nextQuantity,
+          selectedOptions: selectedIngredients,
+        }]);
+      }
     }
 
     setShowIngredientsModal(false);
     setSelectedProduct(null);
     setSelectedQuantity(0);
     setSelectedIngredients({});
+    setEditingLineId(null);
   };
 
-  const updateQuantity = (productId: number, newQuantity: number) => {
+  const updateQuantity = (lineId: string, newQuantity: number) => {
     if (newQuantity === 0) {
-      removeFromCart(productId);
+      removeFromCart(lineId);
       return;
     }
     setCart(cart.map(item =>
-      item.product.id === productId
+      item.lineId === lineId
         ? { ...item, quantity: Math.min(newQuantity, item.product.stock) }
         : item
     ));
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart(cart.filter(item => item.product.id !== productId));
+  const removeFromCart = (lineId: string) => {
+    setCart(cart.filter(item => item.lineId !== lineId));
+  };
+
+  const groupedCart = cart.reduce<Record<number, { product: Product; quantity: number; subtotal: number }>>((acc, item) => {
+    const key = item.product.id;
+    if (!acc[key]) {
+      acc[key] = {
+        product: item.product,
+        quantity: 0,
+        subtotal: 0,
+      };
+    }
+
+    acc[key].quantity += item.quantity;
+    acc[key].subtotal += item.product.precio * item.quantity;
+    return acc;
+  }, {});
+
+  const groupedCartList = Object.values(groupedCart);
+
+  const decrementGroupedProduct = (productId: number) => {
+    const lineToUpdate = [...cart].reverse().find((line) => line.product.id === productId);
+    if (!lineToUpdate) return;
+
+    if (lineToUpdate.quantity > 1) {
+      setCart(cart.map((line) =>
+        line.lineId === lineToUpdate.lineId
+          ? { ...line, quantity: line.quantity - 1 }
+          : line
+      ));
+      return;
+    }
+
+    removeFromCart(lineToUpdate.lineId);
+  };
+
+  const incrementGroupedProduct = (product: Product) => {
+    if (product.category === 'postres') {
+      const existing = cart.find((line) => line.product.id === product.id);
+      if (existing) {
+        setCart(cart.map((line) =>
+          line.lineId === existing.lineId
+            ? { ...line, quantity: Math.min(line.quantity + 1, line.product.stock) }
+            : line
+        ));
+        return;
+      }
+    }
+
+    openQuantityModal(product);
   };
 
   const calculateTotal = () => {
@@ -464,13 +668,11 @@ export default function VentasPage() {
     console.log('[VENTAS] - change:', change);
     
     const productosArray = cart.map(item => {
-      const opciones = item.product.option_groups?.map(group => ({
-        group_key: group.key,
-        group_label: group.label,
-        values: item.selectedOptions?.[group.key] || []
-      })) || [];
+      const opciones = mapSelectedOptionsToTransactionOptions(item.selectedOptions);
 
       return {
+        product_id: item.product.id,
+        image_url: item.product.image_url,
         nombre: item.product.nombre,
         cantidad: item.quantity,
         precio_unitario: item.product.precio,
@@ -496,27 +698,7 @@ export default function VentasPage() {
 
       console.log('[VENTAS] ✅ Transacción creada:', transaction);
 
-      // Generar y descargar recibo automáticamente
-      const receiptData = {
-        id: transaction.id,
-        fecha: transaction.fecha || new Date().toISOString(),
-        cliente: cliente || 'Cliente general',
-        grupo: grupo || 'General',
-        productos: productosArray,
-        total,
-        pago: paymentAmount,
-        cambio: change,
-        pagado: isCredit ? 'NO' : 'SI',
-      };
-
-      // Preguntar si desea imprimir o solo descargar
-      const shouldPrint = confirm('¡Venta completada! ¿Deseas imprimir el recibo?\n\nSí = Imprimir\nNo = Solo descargar PDF');
-      
-      if (shouldPrint) {
-        printReceipt(receiptData);
-      } else {
-        downloadReceipt(receiptData);
-      }
+      alert('Transacción realizada con éxito');
 
       setCart([]);
       setCliente('');
@@ -556,7 +738,7 @@ export default function VentasPage() {
     console.log('[VENTAS] - Primer producto:', products[0]);
   }
 
-  if (loading) {
+  if (cajaLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
@@ -665,58 +847,42 @@ export default function VentasPage() {
               </div>
             ) : (
               <div className="max-h-[250px] sm:max-h-[300px] lg:max-h-[350px] overflow-y-auto space-y-2 mb-3 sm:mb-4 pr-1">
-                {cart.map((item, index) => (
-                  <div key={index} className="p-2 bg-amber-50 rounded-lg border-2 border-blue-300">
+                {groupedCartList.map((item) => (
+                  <div key={item.product.id} className="p-2 bg-amber-50 rounded-lg border-2 border-blue-300">
                     <div className="flex items-start gap-2 mb-1">
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-xs sm:text-sm text-blue-900 truncate">{item.product.nombre}</p>
                         <p className="text-sm sm:text-base text-blue-700 font-bold">{formatCurrency(item.product.precio)}</p>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.product.id)}
+                        onClick={() => decrementGroupedProduct(item.product.id)}
                         className="text-lg sm:text-xl hover:scale-125 transition-transform flex-shrink-0"
+                        title="Quitar una unidad"
                       >
                         🗑️
                       </button>
                     </div>
-                    
-                    {/* Ingredientes */}
-                    {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
-                      <div className="text-xs text-blue-800 mb-2 pl-1 border-l-2 border-blue-400">
-                        {Object.entries(item.selectedOptions).map(([groupKey, values]) => (
-                          values.length > 0 && (
-                            <div key={groupKey}>
-                              <span className="font-semibold">{groupKey}:</span> {values.join(', ')}
-                            </div>
-                          )
-                        ))}
-                      </div>
-                    )}
 
-                    {/* Controles de cantidad */}
                     <div className="flex items-center gap-1 sm:gap-1.5 justify-between">
                       <div className="flex items-center gap-1 sm:gap-1.5">
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          onClick={() => decrementGroupedProduct(item.product.id)}
                           className="w-6 h-6 sm:w-7 sm:h-7 bg-red-500 hover:bg-red-600 text-white rounded-md text-xs sm:text-sm font-bold flex items-center justify-center"
                         >
                           −
                         </button>
-                        <button
-                          onClick={() => openQuantityModal(item.product)}
-                          className="w-8 sm:w-10 text-center font-bold text-sm sm:text-lg bg-white rounded-md py-0.5 border-2 border-blue-300 hover:border-blue-900"
-                        >
+                        <span className="w-8 sm:w-10 text-center font-bold text-sm sm:text-lg bg-white rounded-md py-0.5 border-2 border-blue-300">
                           {item.quantity}
-                        </button>
+                        </span>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          onClick={() => incrementGroupedProduct(item.product)}
                           className="w-6 h-6 sm:w-7 sm:h-7 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs sm:text-sm font-bold flex items-center justify-center"
                         >
                           +
                         </button>
                       </div>
                       <span className="font-bold text-blue-900 text-xs sm:text-sm">
-                        {formatCurrency(item.product.precio * item.quantity)}
+                        {formatCurrency(item.subtotal)}
                       </span>
                     </div>
                   </div>
@@ -864,16 +1030,17 @@ export default function VentasPage() {
 
       {/* Modal de selección de características y cantidad */}
       {showIngredientsModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-4 my-2 max-h-[95vh] overflow-y-auto border-4 border-blue-300">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-bold text-blue-900">🛍️ Personalizar Comanda</h2>
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-[1px] flex items-center justify-center p-3 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-5 my-2 max-h-[95vh] overflow-y-auto border-4 border-blue-300 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl sm:text-2xl font-black text-blue-900">🛍️ Personalizar Comanda</h2>
               <button
                 onClick={() => {
                   setShowIngredientsModal(false);
                   setSelectedProduct(null);
                   setSelectedQuantity(0);
                   setSelectedIngredients({});
+                  setEditingLineId(null);
                 }}
                 className="text-2xl hover:scale-110 transition-transform"
               >
@@ -881,79 +1048,105 @@ export default function VentasPage() {
               </button>
             </div>
 
-            <div className="bg-white rounded-lg p-3 mb-4 border-l-4 border-blue-600">
-              <p className="text-base font-bold text-gray-900">{selectedProduct.nombre}</p>
-              <p className="text-lg font-bold text-blue-900">{formatCurrency(selectedProduct.precio)}</p>
+            <div className="bg-gradient-to-r from-blue-50 to-amber-50 rounded-xl p-3 mb-4 border-2 border-blue-200">
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-white border border-blue-200 flex items-center justify-center shrink-0">
+                  {selectedProduct.image_url ? (
+                    <img
+                      src={resolveProductImageUrl(selectedProduct.id, selectedProduct.image_url)}
+                      alt={selectedProduct.nombre}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        const fallback = resolveImageUrl(selectedProduct.image_url);
+                        if (fallback && e.currentTarget.src !== fallback) {
+                          e.currentTarget.src = fallback;
+                          return;
+                        }
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <span className="text-2xl">📦</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base sm:text-lg font-black text-gray-900 truncate">{selectedProduct.nombre}</p>
+                  <p className="text-lg sm:text-xl font-black text-blue-900">{formatCurrency(selectedProduct.precio)}</p>
+                  <p className="text-xs font-semibold text-gray-700 capitalize">{selectedProduct.category || 'alimentos'}</p>
+                </div>
+              </div>
+              {selectedProduct.category !== 'postres' && (
+                <p className="text-xs text-gray-700 mt-2">Se agrega de uno en uno por selección.</p>
+              )}
             </div>
 
             {/* Características según categoría */}
             {selectedProduct.category === 'alimentos' && (
               <div className="mb-4 space-y-3">
-                <p className="text-sm font-bold text-gray-700">🌶️ Ingredientes:</p>
+                <p className="text-sm font-black text-blue-900">🌶️ Ingredientes</p>
                 
                 {/* Salsas/Cremas */}
-                <div className="bg-white p-3 rounded-lg border border-gray-200">
-                  <p className="text-sm font-semibold text-gray-900 mb-2">🤍 Salsa/Crema:</p>
-                  <div className="space-y-2">
-                    {['mayonesa', 'crema'].map((choice) => {
+                <div className="bg-white p-3 rounded-lg border-2 border-amber-200">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">🤍 Mayonesa o crema:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {['mayonesa', 'crema', 'sin_mayonesa_crema'].map((choice) => {
                       const isSelected = (selectedIngredients['salsa'] || []).includes(choice);
                       return (
-                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
-                          <input
-                            type="checkbox"
-                            value={choice}
-                            checked={isSelected}
-                            onChange={(e) => {
-                              const current = selectedIngredients['salsa'] || [];
-                              setSelectedIngredients({
-                                ...selectedIngredients,
-                                'salsa': e.target.checked
-                                  ? [...current, choice]
-                                  : current.filter(c => c !== choice)
-                              });
-                            }}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                          <span className="text-2xl">{choice === 'mayonesa' ? '🤎' : '🤍'}</span>
-                          <span className="text-sm text-gray-700 capitalize">{choice}</span>
-                        </label>
+                        <button
+                          key={choice}
+                          type="button"
+                          onClick={() =>
+                            setSelectedIngredients({
+                              ...selectedIngredients,
+                              salsa: isSelected ? [] : [choice],
+                            })
+                          }
+                          className={`p-2.5 rounded-lg border-2 flex items-center gap-2 justify-start transition-colors ${
+                            isSelected
+                              ? 'border-emerald-700 bg-emerald-100 text-emerald-900'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-amber-50'
+                          }`}
+                        >
+                          {OPTION_IMAGE_BY_VALUE[choice] ? (
+                            <img src={OPTION_IMAGE_BY_VALUE[choice]} alt={formatOptionValue(choice)} className="w-8 h-8 object-contain" />
+                          ) : null}
+                          <span className="text-sm font-semibold">{formatOptionValue(choice)}</span>
+                        </button>
                       );
                     })}
                   </div>
                 </div>
 
                 {/* Verduras */}
-                <div className="bg-white p-3 rounded-lg border border-gray-200">
+                <div className="bg-white p-3 rounded-lg border-2 border-amber-200">
                   <p className="text-sm font-semibold text-gray-900 mb-2">🥬 Verduras:</p>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {['cebolla', 'jitomate', 'lechuga', 'chile'].map((choice) => {
                       const isSelected = (selectedIngredients['verduras'] || []).includes(choice);
-                      const emojiMap: Record<string, string> = {
-                        'cebolla': '🧅',
-                        'jitomate': '🍅',
-                        'lechuga': '🥬',
-                        'chile': '🌶️'
-                      };
                       return (
-                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
-                          <input
-                            type="checkbox"
-                            value={choice}
-                            checked={isSelected}
-                            onChange={(e) => {
-                              const current = selectedIngredients['verduras'] || [];
-                              setSelectedIngredients({
-                                ...selectedIngredients,
-                                'verduras': e.target.checked
-                                  ? [...current, choice]
-                                  : current.filter(c => c !== choice)
-                              });
-                            }}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                          <span className="text-2xl">{emojiMap[choice]}</span>
-                          <span className="text-sm text-gray-700 capitalize">{choice}</span>
-                        </label>
+                        <button
+                          key={choice}
+                          type="button"
+                          onClick={() => {
+                            const current = selectedIngredients.verduras || [];
+                            setSelectedIngredients({
+                              ...selectedIngredients,
+                              verduras: isSelected
+                                ? current.filter((item) => item !== choice)
+                                : [...current, choice],
+                            });
+                          }}
+                          className={`p-2.5 rounded-lg border-2 flex items-center gap-2 justify-start transition-colors ${
+                            isSelected
+                              ? 'border-emerald-700 bg-emerald-100 text-emerald-900'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-amber-50'
+                          }`}
+                        >
+                          {OPTION_IMAGE_BY_VALUE[choice] ? (
+                            <img src={OPTION_IMAGE_BY_VALUE[choice]} alt={formatOptionValue(choice)} className="w-8 h-8 object-contain" />
+                          ) : null}
+                          <span className="text-sm font-semibold">{formatOptionValue(choice)}</span>
+                        </button>
                       );
                     })}
                   </div>
@@ -964,79 +1157,118 @@ export default function VentasPage() {
             {/* Para bebidas */}
             {selectedProduct.category === 'bebidas' && (
               <div className="mb-4 space-y-3">
-                <p className="text-sm font-bold text-gray-700">☕ Características de Bebida:</p>
+                <p className="text-sm font-black text-blue-900">☕ Características de Bebida</p>
 
                 {/* Temperatura */}
-                <div className="bg-white p-3 rounded-lg border border-gray-200">
+                <div className="bg-white p-3 rounded-lg border-2 border-sky-200">
                   <p className="text-sm font-semibold text-gray-900 mb-2">🌡️ Temperatura:</p>
-                  <div className="space-y-2">
-                    {['fria', 'caliente'].map((choice) => {
+                  <div className="grid grid-cols-2 gap-2">
+                    {getTemperatureChoices(selectedProduct).map((choice) => {
                       const isSelected = (selectedIngredients['temperatura'] || []).includes(choice);
-                      const label = choice === 'fria' ? 'Fría ❄️' : 'Caliente ☕';
+                      const label = formatOptionValue(choice);
+                      const temperatureLocked = selectedProduct.beverage_type !== 'ambas';
                       return (
-                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
-                          <input
-                            type="radio"
-                            name="temperatura"
-                            value={choice}
-                            checked={isSelected}
-                            onChange={(e) => {
-                              setSelectedIngredients({
-                                ...selectedIngredients,
-                                'temperatura': e.target.checked ? [choice] : []
-                              });
-                            }}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                          <span className="text-2xl">{choice === 'fria' ? '❄️' : '☕'}</span>
-                          <span className="text-sm text-gray-700">{label}</span>
-                        </label>
+                        <button
+                          key={choice}
+                          type="button"
+                          disabled={temperatureLocked}
+                          onClick={() => setSelectedIngredients({ ...selectedIngredients, temperatura: [choice] })}
+                          className={`p-2.5 rounded-lg border-2 flex items-center gap-2 justify-start transition-colors ${
+                            isSelected
+                              ? 'border-emerald-700 bg-emerald-100 text-emerald-900'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-amber-50'
+                          } ${temperatureLocked ? 'cursor-not-allowed opacity-80' : ''}`}
+                        >
+                          {OPTION_IMAGE_BY_VALUE[choice] ? (
+                            <img src={OPTION_IMAGE_BY_VALUE[choice]} alt={label} className="w-8 h-8 object-contain" />
+                          ) : null}
+                          <span className="text-sm font-semibold">{label}</span>
+                        </button>
                       );
                     })}
                   </div>
+                  {selectedProduct.beverage_type !== 'ambas' && (
+                    <p className="text-xs text-gray-600 mt-2">Temperatura fija para esta bebida.</p>
+                  )}
                 </div>
 
                 {/* Azúcar */}
-                <div className="bg-white p-3 rounded-lg border border-gray-200">
+                <div className="bg-white p-3 rounded-lg border-2 border-sky-200">
                   <p className="text-sm font-semibold text-gray-900 mb-2">🍯 Azúcar:</p>
-                  <div className="space-y-2">
-                    {['con_azucar', 'sin_azucar'].map((choice) => {
+                  <div className="grid grid-cols-2 gap-2">
+                    {[['con_azucar', 'Con azúcar'], ['sin_azucar', 'Sin azúcar']].map(([choice, label]) => {
                       const isSelected = (selectedIngredients['azucar'] || []).includes(choice);
-                      const label = choice === 'con_azucar' ? 'Con azúcar 🍯' : 'Sin azúcar ☹️';
                       return (
-                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
-                          <input
-                            type="radio"
-                            name="azucar"
-                            value={choice}
-                            checked={isSelected}
-                            onChange={(e) => {
-                              setSelectedIngredients({
-                                ...selectedIngredients,
-                                'azucar': e.target.checked ? [choice] : []
-                              });
-                            }}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                          <span className="text-2xl">{choice === 'con_azucar' ? '🍯' : '☹️'}</span>
-                          <span className="text-sm text-gray-700">{label}</span>
-                        </label>
+                        <button
+                          key={choice}
+                          type="button"
+                          onClick={() => setSelectedIngredients({ ...selectedIngredients, azucar: [choice] })}
+                          className={`p-2.5 rounded-lg border-2 flex items-center gap-2 justify-start transition-colors ${
+                            isSelected
+                              ? 'border-emerald-700 bg-emerald-100 text-emerald-900'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-amber-50'
+                          }`}
+                        >
+                          {choice === 'sin_azucar' && OPTION_IMAGE_BY_VALUE[choice] ? (
+                            <img src={OPTION_IMAGE_BY_VALUE[choice]} alt={label} className="w-8 h-8 object-contain" />
+                          ) : null}
+                          <span className="text-sm font-semibold">{label}</span>
+                        </button>
                       );
                     })}
                   </div>
                 </div>
+
+                {selectedProduct.beverage_flavors_enabled && (selectedProduct.beverage_flavors || []).length > 0 && (
+                  <div className="bg-white p-3 rounded-lg border-2 border-sky-200">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">🍓 Sabor:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['sin_sabor', ...(selectedProduct.beverage_flavors || [])].map((choice) => {
+                        const current = selectedIngredients['sabores'] || ['sin_sabor'];
+                        const isSelected = current.includes(choice);
+                        const label = formatOptionValue(choice);
+                        const imagePath = getOptionImage(choice);
+
+                        return (
+                          <button
+                            key={choice}
+                            type="button"
+                            onClick={() => setSelectedIngredients({ ...selectedIngredients, sabores: [choice] })}
+                            className={`p-2.5 rounded-lg border-2 flex items-center gap-2 justify-start transition-colors ${
+                              isSelected
+                                ? 'border-emerald-700 bg-emerald-100 text-emerald-900'
+                                : 'border-gray-200 bg-white text-gray-700 hover:bg-amber-50'
+                            }`}
+                          >
+                            <img
+                              src={imagePath}
+                              alt={label}
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            <span className="text-sm font-semibold">{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Cantidad */}
-            <div className="mb-4">
-              <p className="text-sm font-bold text-gray-700 mb-2">📦 Cantidad</p>
-              <NumeroSelector
-                cantidad={selectedQuantity}
-                onChange={setSelectedQuantity}
-                max={selectedProduct.stock}
-              />
-            </div>
+            {/* Cantidad solo para postres */}
+            {selectedProduct.category === 'postres' && (
+              <div className="mb-4 bg-white rounded-lg border-2 border-pink-200 p-3">
+                <p className="text-sm font-black text-blue-900 mb-2">📦 Cantidad</p>
+                <NumeroSelector
+                  cantidad={selectedQuantity}
+                  onChange={setSelectedQuantity}
+                  max={selectedProduct.stock}
+                />
+              </div>
+            )}
 
             <button
               onClick={confirmQuantity}
@@ -1047,7 +1279,7 @@ export default function VentasPage() {
                   : 'bg-green-600 hover:bg-green-700 text-white hover:scale-105 focus:ring-green-500'
               }`}
             >
-              ✅ Agregar al Carrito
+              {editingLineId ? '✅ Actualizar Línea' : '✅ Agregar al Carrito'}
             </button>
           </div>
         </div>

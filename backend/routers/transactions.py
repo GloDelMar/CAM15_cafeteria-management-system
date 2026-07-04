@@ -1,12 +1,113 @@
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse, Response
 from typing import List, Optional
 from models.schemas import Transaction, TransactionCreate
 from database import db, get_next_sequence
 from datetime import datetime
 from pymongo import DESCENDING
 from single_caja import normalize_caja_id
+from services.storage import (
+    get_local_static_file_path,
+    load_s3_product_image,
+    save_document_file,
+)
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
 router = APIRouter()
+
+
+def _build_ticket_pdf(transaction_data: dict) -> bytes:
+    """Genera un PDF simple del ticket para almacenamiento en S3."""
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+
+    _, height = letter
+    y = height - 50
+
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, y, "Cafeteria CAM 15 - Ticket de Venta")
+    y -= 24
+
+    pdf.setFont("Helvetica", 10)
+    pdf.drawString(50, y, f"Ticket: #{transaction_data['id']}")
+    y -= 16
+
+    fecha = transaction_data.get("fecha")
+    fecha_str = fecha.strftime("%Y-%m-%d %H:%M:%S") if isinstance(fecha, datetime) else str(fecha)
+    pdf.drawString(50, y, f"Fecha: {fecha_str}")
+    y -= 16
+
+    pdf.drawString(50, y, f"Cliente: {transaction_data.get('cliente', 'Cliente general')}")
+    y -= 16
+    pdf.drawString(50, y, f"Grupo: {transaction_data.get('grupo', 'General')}")
+    y -= 24
+
+    pdf.setFont("Helvetica-Bold", 11)
+    pdf.drawString(50, y, "Productos")
+    y -= 18
+
+    pdf.setFont("Helvetica", 9)
+    for item in transaction_data.get("productos", []):
+        line = f"{item.get('cantidad', 0)} x {item.get('nombre', '')} - ${float(item.get('subtotal', 0)):.2f}"
+        pdf.drawString(50, y, line[:110])
+        y -= 14
+
+        for option in item.get("opciones", []):
+            values = option.get("values", [])
+            if values:
+                option_line = f"  - {option.get('group_label', option.get('group_key', 'opcion'))}: {', '.join(values)}"
+                pdf.drawString(60, y, option_line[:105])
+                y -= 12
+
+        if y < 80:
+            pdf.showPage()
+            y = height - 50
+            pdf.setFont("Helvetica", 9)
+
+    y -= 8
+    pdf.setFont("Helvetica-Bold", 10)
+    pdf.drawString(50, y, f"Total: ${float(transaction_data.get('total', 0)):.2f}")
+    y -= 14
+    pdf.drawString(50, y, f"Pago: ${float(transaction_data.get('pago', 0)):.2f}")
+    y -= 14
+    pdf.drawString(50, y, f"Cambio: ${float(transaction_data.get('cambio', 0)):.2f}")
+    y -= 14
+    pdf.drawString(50, y, f"Estado: {'PAGADO' if transaction_data.get('pagado') == 'SI' else 'CREDITO'}")
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def _store_transaction_ticket_document(transaction_data: dict) -> dict:
+    """Genera y guarda el ticket en el bucket/documentos y registra su metadata."""
+    ticket_pdf = _build_ticket_pdf(transaction_data)
+    filename = f"ticket_{transaction_data['id']}.pdf"
+
+    file_url = save_document_file(
+        category="tickets",
+        unique_name=filename,
+        file_bytes=ticket_pdf,
+        content_type="application/pdf",
+    )
+
+    doc_record = {
+        "id": get_next_sequence("documents"),
+        "filename": filename,
+        "content_type": "application/pdf",
+        "size": len(ticket_pdf),
+        "category": "tickets",
+        "reference_type": "transaction",
+        "reference_id": str(transaction_data["id"]),
+        "file_url": file_url,
+        "created_at": datetime.utcnow(),
+    }
+
+    db.documents.insert_one(doc_record)
+    doc_record.pop("_id", None)
+    return doc_record
 
 
 def _parse_date(value: Optional[str]) -> Optional[datetime]:
@@ -84,6 +185,65 @@ async def get_transaction(transaction_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener transacción: {str(e)}")
 
+
+@router.get("/{transaction_id}/ticket/download")
+async def download_transaction_ticket(transaction_id: int):
+    """Descarga el ticket PDF almacenado para impresión bajo demanda."""
+    try:
+        transaction = db.transactions.find_one(
+            {"id": transaction_id},
+            {"_id": 0, "id": 1, "ticket_document_id": 1, "ticket_url": 1},
+        )
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transacción no encontrada")
+
+        ticket_url = transaction.get("ticket_url")
+        ticket_document_id = transaction.get("ticket_document_id")
+
+        if not ticket_url and ticket_document_id:
+            doc = db.documents.find_one({"id": ticket_document_id}, {"_id": 0, "file_url": 1})
+            ticket_url = doc.get("file_url") if doc else None
+
+        if not ticket_url:
+            fallback_doc = db.documents.find_one(
+                {
+                    "reference_type": "transaction",
+                    "reference_id": str(transaction_id),
+                    "category": "tickets",
+                },
+                {"_id": 0, "file_url": 1},
+                sort=[("id", DESCENDING)],
+            )
+            ticket_url = fallback_doc.get("file_url") if fallback_doc else None
+
+        if not ticket_url:
+            raise HTTPException(status_code=404, detail="Ticket no encontrado para esta transacción")
+
+        filename = f"ticket_{transaction_id}.pdf"
+        headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+
+        if ticket_url.startswith("http"):
+            content, content_type = load_s3_product_image(ticket_url)
+            return Response(
+                content=content,
+                media_type=content_type or "application/pdf",
+                headers=headers,
+            )
+
+        local_file_path = get_local_static_file_path(ticket_url)
+        if not local_file_path.exists():
+            raise HTTPException(status_code=404, detail="Archivo de ticket no encontrado")
+
+        return FileResponse(
+            path=local_file_path,
+            media_type="application/pdf",
+            filename=filename,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al descargar ticket: {str(e)}")
+
 @router.post("/", response_model=Transaction, status_code=201)
 async def create_transaction(transaction: TransactionCreate):
     """Crear una nueva transacción"""
@@ -98,6 +258,24 @@ async def create_transaction(transaction: TransactionCreate):
         db.transactions.insert_one(transaction_dict)
         created_transaction = dict(transaction_dict)
         created_transaction.pop("_id", None)
+
+        # Generar y guardar ticket PDF en S3 (bucket configurado)
+        try:
+            ticket_document = _store_transaction_ticket_document(created_transaction)
+        except Exception:
+            db.transactions.delete_one({"id": created_transaction["id"]})
+            raise
+
+        # Guardar referencia del ticket en la transacción
+        db.transactions.update_one(
+            {"id": created_transaction["id"]},
+            {
+                "$set": {
+                    "ticket_document_id": ticket_document["id"],
+                    "ticket_url": ticket_document["file_url"],
+                }
+            },
+        )
 
         # Si no está pagado, registrar como deudor
         if transaction.pagado == "NO":

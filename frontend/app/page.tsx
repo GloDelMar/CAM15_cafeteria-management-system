@@ -85,13 +85,14 @@ export default function Dashboard() {
       <div className="bg-blue-900 rounded-2xl shadow-xl p-8 mb-8 text-white">
         <div className="flex items-center space-x-4 sm:space-x-6">
           {/* Logo */}
-          <Image 
-            src="/cafeteria_logo.png" 
-            alt="Cafetería CAM 15 Logo" 
-            width={120} 
-            height={120}
-            className="object-contain bg-white rounded-lg p-2 w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48"
-          />
+          <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 overflow-hidden rounded-lg bg-sky-100/90 p-1 flex items-center justify-center">
+            <Image
+              src="/cafeteria_logo.png"
+              alt="Cafetería CAM 15 Logo"
+              fill
+              className="object-contain object-center scale-105"
+            />
+          </div>
           <div className="flex-1">
             <h1 className="text-3xl sm:text-4xl font-black">Cafetería CAM 15</h1>
             <p className="text-base sm:text-lg text-orange-50 font-semibold">Centro de Atención Múltiple No.15</p>
@@ -101,7 +102,7 @@ export default function Dashboard() {
       </div>
 
       {/* Botones de acción rápida */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <button
           onClick={() => router.push('/ventas')}
           className="bg-blue-900 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
@@ -127,6 +128,15 @@ export default function Dashboard() {
           <div className="text-4xl mb-2">📄</div>
           <div className="font-bold text-lg">Recibos</div>
           <div className="text-xs opacity-90">Historial</div>
+        </button>
+
+        <button
+          onClick={() => router.push('/comandas')}
+          className="bg-blue-900 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
+        >
+          <div className="text-4xl mb-2">🍽️</div>
+          <div className="font-bold text-lg">Comandas</div>
+          <div className="text-xs opacity-90">Entregas del día</div>
         </button>
 
         <button

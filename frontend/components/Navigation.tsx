@@ -28,6 +28,7 @@ const Navigation = () => {
   const navItems = [
     { href: '/', label: 'Inicio', icon: '🏠' },
     { href: '/ventas', label: 'Vender', icon: '🛒' },
+    { href: '/comandas', label: 'Comandas', icon: '🍽️' },
     { href: '/productos', label: 'Productos', icon: '📦' },
     { href: '/recibos', label: 'Recibos', icon: '📄' },
     { href: '/deudores', label: 'Deudores', icon: '👥' },
@@ -35,18 +36,19 @@ const Navigation = () => {
   ];
   
   return (
-    <nav className="bg-blue-900 shadow-lg sticky top-0 z-50">
+    <nav className="topbar-nav bg-blue-900 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-between h-28 sm:h-32 md:h-40">
+        <div className="flex items-center justify-between h-20 sm:h-24 md:h-28">
           {/* Logo y Nombre */}
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-900 rounded-lg px-2 py-1">
-            <Image 
-              src="/cafeteria_logo.png" 
-              alt="Cafetería CAM 15 Logo" 
-              width={80} 
-              height={80}
-              className="object-contain sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white rounded p-1"
-            />
+          <Link href="/" className="no-underline hover:no-underline visited:no-underline flex items-center space-x-1.5 sm:space-x-2 hover:opacity-90 transition-opacity focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-900 rounded-lg px-1 py-0.5">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 overflow-hidden rounded-lg bg-sky-100/90 p-1 flex items-center justify-center">
+              <Image
+                src="/cafeteria_logo.png"
+                alt="Cafetería CAM 15 Logo"
+                fill
+                className="object-contain object-center scale-105"
+              />
+            </div>
             <div className="hidden sm:flex flex-col">
               <span className="text-base sm:text-lg md:text-2xl font-black text-white leading-tight">
                 Cafetería CAM 15
@@ -66,10 +68,10 @@ const Navigation = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-4 py-2.5 rounded-lg text-sm md:text-base font-semibold transition-all focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-900 ${
+                  className={`no-underline hover:no-underline visited:no-underline px-4 py-2.5 rounded-lg text-sm md:text-base font-semibold transition-all focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-900 ${
                     isActive
-                      ? 'bg-white text-blue-900 shadow-md'
-                      : 'text-white hover:bg-blue-800'
+                      ? 'bg-white text-black visited:text-black shadow-md'
+                      : 'text-white visited:text-white hover:bg-blue-800'
                   }`}
                   title={item.label}
                 >
@@ -125,10 +127,10 @@ const Navigation = () => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-lg text-base font-semibold transition-all focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-900 ${
+                  className={`no-underline hover:no-underline visited:no-underline block px-4 py-3 rounded-lg text-base font-semibold transition-all focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-900 ${
                     isActive
-                      ? 'bg-white text-blue-900 shadow-md'
-                      : 'text-white hover:bg-blue-800'
+                      ? 'bg-white text-black visited:text-black shadow-md'
+                      : 'text-white visited:text-white hover:bg-blue-800'
                   }`}
                 >
                   <span className="mr-2 text-lg">{item.icon}</span>

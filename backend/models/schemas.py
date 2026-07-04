@@ -31,6 +31,8 @@ class ProductBase(BaseModel):
     stock: int = Field(default=0, ge=0)
     category: str = Field(default="alimentos", pattern="^(bebidas|alimentos|postres)$")
     beverage_type: Optional[str] = Field(None, pattern="^(fria|caliente|ambas)$")
+    beverage_flavors_enabled: bool = False
+    beverage_flavors: List[str] = Field(default_factory=list)
     option_groups: List["ProductOptionGroup"] = Field(default_factory=list)
     image_url: Optional[str] = None
     caja_id: Optional[int] = None
@@ -44,6 +46,8 @@ class ProductUpdate(BaseModel):
     stock: Optional[int] = Field(None, ge=0)
     category: Optional[str] = Field(None, pattern="^(bebidas|alimentos|postres)$")
     beverage_type: Optional[str] = Field(None, pattern="^(fria|caliente|ambas)$")
+    beverage_flavors_enabled: Optional[bool] = None
+    beverage_flavors: Optional[List[str]] = None
     option_groups: Optional[List["ProductOptionGroup"]] = None
     image_url: Optional[str] = None
     caja_id: Optional[int] = None
@@ -67,6 +71,8 @@ class ProductInTransaction(BaseModel):
     cantidad: int
     precio_unitario: float
     subtotal: float
+    product_id: Optional[int] = None
+    image_url: Optional[str] = None
     opciones: List["TransactionOptionSelection"] = Field(default_factory=list)
 
 
