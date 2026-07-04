@@ -37,15 +37,15 @@ const Navigation = () => {
   return (
     <nav className="bg-blue-900 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-between h-20 sm:h-24 md:h-28">
+        <div className="flex items-center justify-between h-28 sm:h-32 md:h-40">
           {/* Logo y Nombre */}
           <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-900 rounded-lg px-2 py-1">
             <Image 
               src="/cafeteria_logo.png" 
               alt="Cafetería CAM 15 Logo" 
-              width={48} 
-              height={48}
-              className="object-contain sm:w-16 sm:h-16 md:w-20 md:h-20 bg-white rounded p-1"
+              width={80} 
+              height={80}
+              className="object-contain sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white rounded p-1"
             />
             <div className="hidden sm:flex flex-col">
               <span className="text-base sm:text-lg md:text-2xl font-black text-white leading-tight">
