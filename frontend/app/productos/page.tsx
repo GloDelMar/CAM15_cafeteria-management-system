@@ -11,6 +11,8 @@ interface Product {
   name: string;
   price: number;
   image_url?: string;
+  category?: string; // alimentos, bebidas, postres
+  beverage_type?: string; // fria, caliente, ambas
   created_at: string;
   caja_id?: number;
 }
@@ -30,7 +32,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({ name: '', price: '', caja_id: '' });
+  const [formData, setFormData] = useState({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -83,6 +85,8 @@ export default function ProductsPage() {
         name: formData.name,
         price: parseFloat(formData.price),
         caja_id: selectedCaja.id, // Asignar automáticamente la caja seleccionada
+        category: formData.category || null,
+        beverage_type: formData.beverage_type || null,
       };
 
       let savedProduct;
@@ -99,7 +103,7 @@ export default function ProductsPage() {
 
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({ name: '', price: '', caja_id: '' });
+      setFormData({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
       setImageFile(null);
       loadProducts();
     } catch (error) {
@@ -125,14 +129,16 @@ export default function ProductsPage() {
     setFormData({ 
       name: product.name, 
       price: product.price.toString(),
-      caja_id: product.caja_id?.toString() || ''
+      caja_id: product.caja_id?.toString() || '',
+      category: product.category || '',
+      beverage_type: product.beverage_type || ''
     });
     setShowModal(true);
   }
 
   function openNewModal() {
     setEditingProduct(null);
-    setFormData({ name: '', price: '', caja_id: '' });
+    setFormData({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
     setImageFile(null);
     setShowModal(true);
   }
@@ -192,6 +198,16 @@ export default function ProductsPage() {
             <div className="p-4">
               <h3 className="font-semibold text-lg text-gray-900 mb-2">{product.name}</h3>
               <p className="text-2xl font-bold text-blue-900 mb-2">{formatCurrency(product.price)}</p>
+              {product.category && (
+                <p className="text-sm text-gray-600 mb-1">
+                  📂 {product.category === 'alimentos' ? '🍔' : product.category === 'bebidas' ? '🍹' : '🍰'} {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
+                </p>
+              )}
+              {product.beverage_type && (
+                <p className="text-sm text-gray-600 mb-2">
+                  {product.beverage_type === 'fria' ? '❄️' : product.beverage_type === 'caliente' ? '☕' : '🔄'} {product.beverage_type.charAt(0).toUpperCase() + product.beverage_type.slice(1)}
+                </p>
+              )}
               {product.caja_id && (
                 <p className="text-sm text-gray-600 mb-4">
                   🏪 {cajas.find(c => c.id === product.caja_id)?.nombre || 'Caja desconocida'}
@@ -271,6 +287,40 @@ export default function ProductsPage() {
                   {selectedCaja?.nombre || 'Sin caja seleccionada'}
                 </div>
               </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Categoría
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value, beverage_type: '' })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                >
+                  <option value="">Selecciona categoría</option>
+                  <option value="alimentos">🍔 Alimentos</option>
+                  <option value="bebidas">🍹 Bebidas</option>
+                  <option value="postres">🍰 Postres</option>
+                </select>
+              </div>
+
+              {formData.category === 'bebidas' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Bebida
+                  </label>
+                  <select
+                    value={formData.beverage_type}
+                    onChange={(e) => setFormData({ ...formData, beverage_type: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                  >
+                    <option value="">Selecciona tipo</option>
+                    <option value="fria">❄️ Fría</option>
+                    <option value="caliente">☕ Caliente</option>
+                    <option value="ambas">🔄 Ambas</option>
+                  </select>
+                </div>
+              )}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Imagen (opcional)
@@ -288,7 +338,7 @@ export default function ProductsPage() {
                   onClick={() => {
                     setShowModal(false);
                     setEditingProduct(null);
-                    setFormData({ name: '', price: '', caja_id: '' });
+                    setFormData({ name: '', price: '', caja_id: '', category: '', beverage_type: '' });
                     setImageFile(null);
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
