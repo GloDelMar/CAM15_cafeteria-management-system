@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.className} ${inter.variable} bg-orange-50`}>
+      <body className={`${inter.className} ${inter.variable} bg-amber-50`}>
         <AuthGuard>
           <CajaProvider>
             <div className="min-h-screen flex flex-col">

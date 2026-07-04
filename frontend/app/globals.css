@@ -1,32 +1,37 @@
 @import "tailwindcss";
 
-/* CAM 15 Accessible Color Palette - WCAG AA+ Compliant, Colorblind Safe */
+/* CAM 15 Accessible Color Palette - Cafetería Theme - WCAG AA+ Compliant, Colorblind Safe */
 :root {
-  --background: #FFFBF5;
-  --foreground: #2D2D2D;
+  /* Fondos - Cálidos y acogedores */
+  --background: #FAF7F2;
+  --bg-secondary: #F1F3F4;
+  --foreground: #222222;
+  --text-secondary: #4B5563;
   
-  /* Colores principales - Accesibles para daltonismo y baja visión */
-  --primary-naranja: #CC6600;      /* Naranja cálido, visible para daltónicos */
-  --primary-naranja-dark: #994400; /* Naranja oscuro para contraste */
-  --primary-azul: #0066CC;         /* Azul accesible para daltónicos */
-  --primary-gris-oscuro: #333333;  /* Texto principal */
-  --primary-gris-claro: #F0F0F0;   /* Fondos secundarios */
-  --primary-crema: #F5F0E8;        /* Fondo accesible */
+  /* Colores principales - Tema cafetería */
+  --primary-azul: #0F4C5C;         /* Azul petróleo - principal */
+  --primary-verde: #2A7F62;        /* Verde azulado - secundario */
+  --primary-mostaza: #C69214;      /* Mostaza suave - acento */
   
-  /* Colores de estado - Seguros para daltonismo */
-  --success: #228B22;   /* Verde oscuro (visible para daltónicos) */
-  --warning: #FF8C00;   /* Naranja oscuro (rojo-ciego safe) */
-  --danger: #8B0000;    /* Rojo muy oscuro (visible) */
+  /* Estados - Coherentes con paleta */
+  --success: #2E7D32;     /* Verde oscuro */
+  --warning: #C69214;     /* Mostaza suave */
+  --danger: #B3261E;      /* Rojo oscuro */
   
-  /* Acentos complementarios */
-  --accent-sand: #E8DACC;
-  --accent-tan: #C19A6B;
+  /* Soporte legado para componentes existentes */
+  --primary-naranja: #0F4C5C;
+  --primary-naranja-dark: #0D3A47;
+  --primary-gris-oscuro: #222222;
+  --primary-gris-claro: #F1F3F4;
+  --primary-crema: #FAF7F2;
+  --accent-sand: #FAF7F2;
+  --accent-tan: #C69214;
   
   /* Accesibilidad */
   --text-lg: 18px;
   --text-xl: 24px;
   --text-2xl: 32px;
-  --focus-ring: 3px solid #8B5A2B;
+  --focus-ring: 4px solid #0F4C5C;
   --focus-offset: 2px;
 }
 

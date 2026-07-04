@@ -82,7 +82,7 @@ export default function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header con nombre */}
-      <div className="bg-orange-700 rounded-2xl shadow-xl p-8 mb-8 text-white">
+      <div className="bg-blue-900 rounded-2xl shadow-xl p-8 mb-8 text-white">
         <div className="flex items-center space-x-4 sm:space-x-6">
           {/* Logo */}
           <Image 
@@ -104,7 +104,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
           onClick={() => router.push('/ventas')}
-          className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400 focus:ring-offset-2"
+          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">🛒</div>
           <div className="font-bold text-lg">Vender</div>
@@ -113,7 +113,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/productos')}
-          className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400 focus:ring-offset-2"
+          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">📦</div>
           <div className="font-bold text-lg">Productos</div>
@@ -122,7 +122,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/recibos')}
-          className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400 focus:ring-offset-2"
+          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">📄</div>
           <div className="font-bold text-lg">Recibos</div>
@@ -131,7 +131,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => router.push('/caja')}
-          className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400 focus:ring-offset-2"
+          className="bg-amber-600 hover:bg-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
         >
           <div className="text-4xl mb-2">💰</div>
           <div className="font-bold text-lg">Caja</div>
@@ -141,11 +141,11 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-lg border-l-4 border-orange-600 p-6">
+        <div className="bg-white rounded-xl shadow-lg border-l-4 border-blue-600 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-700 font-semibold text-sm">Saldo Actual</p>
-              <p className="text-4xl font-black text-orange-700 mt-2">{formatCurrency(saldo)}</p>
+              <p className="text-4xl font-black text-blue-900 mt-2">{formatCurrency(saldo)}</p>
             </div>
             <div className="text-5xl opacity-30">💵</div>
           </div>
@@ -174,15 +174,15 @@ export default function Dashboard() {
 
       {/* Operaciones recientes */}
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-orange-700 mb-4">📋 Últimas Operaciones</h2>
+        <h2 className="text-2xl font-bold text-blue-900 mb-4">📋 Últimas Operaciones</h2>
         
         {recentOperations && recentOperations.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b-2 border-orange-200 bg-orange-50">
-                  <th className="text-left py-3 px-4 font-bold text-orange-700">Tipo</th>
-                  <th className="text-left py-3 px-4 font-bold text-orange-700">Monto</th>
+                <tr className="border-b-2 border-blue-200 bg-amber-50">
+                  <th className="text-left py-3 px-4 font-bold text-blue-900">Tipo</th>
+                  <th className="text-left py-3 px-4 font-bold text-blue-900">Monto</th>
                   <th className="text-left py-3 px-4 font-bold text-amber-900">Razón</th>
                   <th className="text-left py-3 px-4 font-bold text-amber-900">Fecha</th>
                 </tr>
