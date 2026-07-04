@@ -15,11 +15,21 @@ interface Product {
   stock: number;
   image_url?: string;
   caja_id?: number;
+  category?: string;
+  option_groups?: ProductOptionGroup[];
+}
+
+interface ProductOptionGroup {
+  key: string;
+  label: string;
+  selection_type: 'single' | 'multiple';
+  choices: string[];
 }
 
 interface CartItem {
   product: Product;
   quantity: number;
+  selectedOptions?: Record<string, string[]>;
 }
 
 export default function VentasPage() {
@@ -30,14 +40,16 @@ export default function VentasPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('todos');
   const [cliente, setCliente] = useState('');
   const [grupo, setGrupo] = useState('');
   const [isCredit, setIsCredit] = useState(false);
   const [payment, setPayment] = useState('');
   const [selectedCoins, setSelectedCoins] = useState<Array<{denom: number, count: number}>>([]);
-  const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [showIngredientsModal, setShowIngredientsModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(0);
+  const [selectedIngredients, setSelectedIngredients] = useState<Record<string, string[]>>({});
   const [changeSuggestionIndex, setChangeSuggestionIndex] = useState(0);
   const [showCustomClientInput, setShowCustomClientInput] = useState(false);
   const [showChangeSuggestionModal, setShowChangeSuggestionModal] = useState(false);
@@ -177,12 +189,13 @@ export default function VentasPage() {
     setSelectedProduct(product);
     const existingItem = cart.find(item => item.product.id === product.id);
     setSelectedQuantity(existingItem?.quantity || 0);
-    setShowQuantityModal(true);
+    setSelectedIngredients(existingItem?.selectedOptions || {});
+    setShowIngredientsModal(true);
   };
 
   const confirmQuantity = () => {
     if (!selectedProduct || selectedQuantity === 0) {
-      setShowQuantityModal(false);
+      setShowIngredientsModal(false);
       return;
     }
 
@@ -190,16 +203,25 @@ export default function VentasPage() {
     if (existing) {
       setCart(cart.map(item =>
         item.product.id === selectedProduct.id
-          ? { ...item, quantity: Math.min(selectedQuantity, selectedProduct.stock) }
+          ? { 
+              ...item, 
+              quantity: Math.min(selectedQuantity, selectedProduct.stock),
+              selectedOptions: selectedIngredients 
+            }
           : item
       ));
     } else {
-      setCart([...cart, { product: selectedProduct, quantity: Math.min(selectedQuantity, selectedProduct.stock) }]);
+      setCart([...cart, { 
+        product: selectedProduct, 
+        quantity: Math.min(selectedQuantity, selectedProduct.stock),
+        selectedOptions: selectedIngredients
+      }]);
     }
 
-    setShowQuantityModal(false);
+    setShowIngredientsModal(false);
     setSelectedProduct(null);
     setSelectedQuantity(0);
+    setSelectedIngredients({});
   };
 
   const updateQuantity = (productId: number, newQuantity: number) => {
@@ -438,12 +460,21 @@ export default function VentasPage() {
     console.log('[VENTAS] - paymentAmount:', paymentAmount);
     console.log('[VENTAS] - change:', change);
     
-    const productosArray = cart.map(item => ({
-      nombre: item.product.nombre,
-      cantidad: item.quantity,
-      precio_unitario: item.product.precio,
-      subtotal: item.product.precio * item.quantity
-    }));
+    const productosArray = cart.map(item => {
+      const opciones = item.product.option_groups?.map(group => ({
+        group_key: group.key,
+        group_label: group.label,
+        values: item.selectedOptions?.[group.key] || []
+      })) || [];
+
+      return {
+        nombre: item.product.nombre,
+        cantidad: item.quantity,
+        precio_unitario: item.product.precio,
+        subtotal: item.product.precio * item.quantity,
+        opciones
+      };
+    });
 
     console.log('[VENTAS] 📦 Productos:', productosArray);
 
@@ -507,9 +538,11 @@ export default function VentasPage() {
     }
   }
 
-  const filteredProducts = products.filter(p =>
-    p?.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p?.nombre?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'todos' || p?.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
   
   console.log('[VENTAS] 🔎 Estado actual:');
   console.log(`[VENTAS] - products.length: ${products.length}`);
@@ -550,6 +583,26 @@ export default function VentasPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-gray-300 rounded-lg sm:rounded-xl mb-3 sm:mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
+
+          {/* Filtros por categoría */}
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            {['todos', 'alimentos', 'bebidas', 'postres'].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${
+                  selectedCategory === cat
+                    ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-amber-400'
+                }`}
+              >
+                {cat === 'todos' && '🍽️ Todos'}
+                {cat === 'alimentos' && '🥘 Alimentos'}
+                {cat === 'bebidas' && '🥤 Bebidas'}
+                {cat === 'postres' && '🍰 Postres'}
+              </button>
+            ))}
+          </div>
 
           {/* Grid de productos */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
@@ -603,46 +656,68 @@ export default function VentasPage() {
             ) : (
               <div className="max-h-[250px] sm:max-h-[300px] lg:max-h-[350px] overflow-y-auto space-y-2 mb-3 sm:mb-4 pr-1">
                 {cart.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-xs sm:text-sm truncate">{item.product.nombre}</p>
-                      <p className="text-sm sm:text-base text-blue-600 font-semibold">{formatCurrency(item.product.precio)}</p>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-1.5">
+                  <div key={index} className="p-2 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-300">
+                    <div className="flex items-start gap-2 mb-1">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-xs sm:text-sm text-amber-900 truncate">{item.product.nombre}</p>
+                        <p className="text-sm sm:text-base text-amber-700 font-bold">{formatCurrency(item.product.precio)}</p>
+                      </div>
                       <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        className="w-7 h-7 sm:w-8 sm:h-8 bg-red-500 hover:bg-red-600 text-white rounded-md text-base sm:text-lg font-bold flex items-center justify-center"
+                        onClick={() => removeFromCart(item.product.id)}
+                        className="text-lg sm:text-xl hover:scale-125 transition-transform flex-shrink-0"
                       >
-                        −
-                      </button>
-                      <button
-                        onClick={() => openQuantityModal(item.product)}
-                        className="w-10 sm:w-12 text-center font-bold text-base sm:text-xl bg-white rounded-md py-1 border border-blue-300 hover:border-blue-500"
-                      >
-                        {item.quantity}
-                      </button>
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        className="w-7 h-7 sm:w-8 sm:h-8 bg-green-500 hover:bg-green-600 text-white rounded-md text-base sm:text-lg font-bold flex items-center justify-center"
-                      >
-                        +
+                        🗑️
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="text-xl sm:text-2xl md:text-3xl hover:scale-125 transition-transform"
-                    >
-                      🗑️
-                    </button>
+                    
+                    {/* Ingredientes */}
+                    {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                      <div className="text-xs text-amber-800 mb-2 pl-1 border-l-2 border-amber-400">
+                        {Object.entries(item.selectedOptions).map(([groupKey, values]) => (
+                          values.length > 0 && (
+                            <div key={groupKey}>
+                              <span className="font-semibold">{groupKey}:</span> {values.join(', ')}
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Controles de cantidad */}
+                    <div className="flex items-center gap-1 sm:gap-1.5 justify-between">
+                      <div className="flex items-center gap-1 sm:gap-1.5">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          className="w-6 h-6 sm:w-7 sm:h-7 bg-red-500 hover:bg-red-600 text-white rounded-md text-xs sm:text-sm font-bold flex items-center justify-center"
+                        >
+                          −
+                        </button>
+                        <button
+                          onClick={() => openQuantityModal(item.product)}
+                          className="w-8 sm:w-10 text-center font-bold text-sm sm:text-lg bg-white rounded-md py-0.5 border-2 border-amber-300 hover:border-amber-500"
+                        >
+                          {item.quantity}
+                        </button>
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          className="w-6 h-6 sm:w-7 sm:h-7 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs sm:text-sm font-bold flex items-center justify-center"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <span className="font-bold text-amber-900 text-xs sm:text-sm">
+                        {formatCurrency(item.product.precio * item.quantity)}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="border-t-2 border-blue-300 pt-3 mb-3">
-              <div className="flex justify-between items-center bg-gradient-to-r from-blue-100 to-purple-100 p-2 sm:p-3 rounded-lg mb-3">
-                <span className="text-sm sm:text-base font-bold">Total:</span>
-                <span className="text-xl sm:text-2xl font-bold text-blue-600">{formatCurrency(calculateTotal())}</span>
+            <div className="border-t-2 border-amber-300 pt-3 mb-3">
+              <div className="flex justify-between items-center bg-gradient-to-r from-amber-100 to-yellow-100 p-2 sm:p-3 rounded-lg mb-3 border-2 border-amber-400">
+                <span className="text-sm sm:text-base font-bold text-amber-900">Total:</span>
+                <span className="text-xl sm:text-2xl font-bold text-amber-900">{formatCurrency(calculateTotal())}</span>
               </div>
 
               <div className="space-y-2 sm:space-y-3">
@@ -777,17 +852,18 @@ export default function VentasPage() {
         </div>
       </div>
 
-      {/* Modal de selección de cantidad */}
-      {showQuantityModal && selectedProduct && (
+      {/* Modal de selección de ingredientes y cantidad */}
+      {showIngredientsModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-3 my-2 max-h-[98vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-bold text-gray-900">¿Cuántos llevas?</h2>
+          <div className="bg-gradient-to-b from-amber-50 to-white rounded-2xl max-w-sm w-full p-4 my-2 max-h-[95vh] overflow-y-auto border-4 border-amber-300">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-bold text-amber-900">🛍️ Personalizar Comanda</h2>
               <button
                 onClick={() => {
-                  setShowQuantityModal(false);
+                  setShowIngredientsModal(false);
                   setSelectedProduct(null);
                   setSelectedQuantity(0);
+                  setSelectedIngredients({});
                 }}
                 className="text-2xl hover:scale-110 transition-transform"
               >
@@ -795,22 +871,84 @@ export default function VentasPage() {
               </button>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-2 mb-2">
+            <div className="bg-white rounded-lg p-3 mb-4 border-l-4 border-amber-600">
               <p className="text-base font-bold text-gray-900">{selectedProduct.nombre}</p>
-              <p className="text-lg font-bold text-blue-600">{formatCurrency(selectedProduct.precio)}</p>
-              <p className="text-xs text-gray-600">Stock: {selectedProduct.stock}</p>
+              <p className="text-lg font-bold text-amber-600">{formatCurrency(selectedProduct.precio)}</p>
             </div>
 
-            <NumeroSelector
-              cantidad={selectedQuantity}
-              onChange={setSelectedQuantity}
-              max={selectedProduct.stock}
-            />
+            {/* Ingredientes / Opciones */}
+            {selectedProduct.option_groups && selectedProduct.option_groups.length > 0 && (
+              <div className="mb-4 space-y-3">
+                <p className="text-sm font-bold text-gray-700">🌶️ Ingredientes Disponibles:</p>
+                {selectedProduct.option_groups.map((group) => (
+                  <div key={group.key} className="bg-white p-3 rounded-lg border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">{group.label}</p>
+                    <div className="space-y-2">
+                      {group.choices.map((choice) => {
+                        const isSelected = (selectedIngredients[group.key] || []).includes(choice);
+                        const ingredientEmojis: Record<string, string> = {
+                          'cebolla': '🧅',
+                          'chile': '🌶️',
+                          'crema': '🤍',
+                          'jitomate': '🍅',
+                          'lechuga': '🥬',
+                          'mayonesa': '🤎',
+                          'sin_azucar': '🚫',
+                          'caliente': '🔥',
+                          'frio': '❄️',
+                        };
+                        const emoji = ingredientEmojis[choice.toLowerCase().replace(/ /g, '_')] || '✓';
+                        
+                        return (
+                          <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
+                            <input
+                              type={group.selection_type === 'single' ? 'radio' : 'checkbox'}
+                              name={group.key}
+                              value={choice}
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (group.selection_type === 'single') {
+                                  setSelectedIngredients({
+                                    ...selectedIngredients,
+                                    [group.key]: e.target.checked ? [choice] : []
+                                  });
+                                } else {
+                                  const current = selectedIngredients[group.key] || [];
+                                  setSelectedIngredients({
+                                    ...selectedIngredients,
+                                    [group.key]: e.target.checked
+                                      ? [...current, choice]
+                                      : current.filter(c => c !== choice)
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 cursor-pointer"
+                            />
+                            <span className="text-2xl">{emoji}</span>
+                            <span className="text-sm text-gray-700">{choice}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Cantidad */}
+            <div className="mb-4">
+              <p className="text-sm font-bold text-gray-700 mb-2">📦 Cantidad</p>
+              <NumeroSelector
+                cantidad={selectedQuantity}
+                onChange={setSelectedQuantity}
+                max={selectedProduct.stock}
+              />
+            </div>
 
             <button
               onClick={confirmQuantity}
               disabled={selectedQuantity === 0}
-              className={`w-full mt-2 py-2 rounded-lg font-bold text-base shadow-lg transition-all ${
+              className={`w-full py-3 rounded-lg font-bold text-base shadow-lg transition-all ${
                 selectedQuantity === 0
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white hover:scale-105'
