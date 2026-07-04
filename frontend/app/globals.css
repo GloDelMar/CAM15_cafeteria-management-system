@@ -1,8 +1,26 @@
 @import "tailwindcss";
 
+/* CAM 15 Color Palette */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf8f3;
+  --foreground: #1a1a1a;
+  --primary-red: #ef4444;
+  --primary-blue: #2563eb;
+  --primary-yellow: #eab308;
+  --primary-orange: #f97316;
+  --primary-green: #22c55e;
+  --primary-purple: #a855f7;
+  --primary-brown: #78350f;
+  --beige: #f5f1e8;
+  --cafe: #3f2d1c;
+  --black: #000000;
+  
+  /* Accesibilidad */
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --focus-ring: 4px solid #eab308;
+  --focus-offset: 2px;
 }
 
 @theme inline {
@@ -23,4 +41,65 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Accesibilidad e Inclusividad */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Mejorar el focus visible para navegación por teclado */
+*:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  min-height: 44px; /* WCAG - Tamaño mínimo de objetivo táctil */
+}
+
+/* Textos accesibles */
+h1 {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* Contraste de color mejorado */
+a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+a:visited {
+  color: var(--primary-purple);
+}
+
+/* Reducir animaciones para usuarios sensibles */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

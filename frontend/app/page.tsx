@@ -1,156 +1,217 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { cajasApi } from '@/lib/api';
-import { formatCurrency } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { cajasApi, cashApi } from '@/lib/api';
+import { formatCurrency } from '@/lib/utils';
 import { useCaja } from '@/contexts/CajaContext';
 
-interface Caja {
+interface CajaInfo {
   id: number;
   nombre: string;
-  descripcion?: string;
-  activa: boolean;
+}
+
+interface CashOperation {
+  tipo: string;
+  monto: number;
+  razon: string;
+  fecha: string;
 }
 
 export default function Dashboard() {
   const router = useRouter();
   const { setSelectedCaja } = useCaja();
-  const [cajas, setCajas] = useState<Caja[]>([]);
-  const [cajasStats, setCajasStats] = useState<Map<number, any>>(new Map());
+  const [saldo, setSaldo] = useState<number>(0);
+  const [totalIngresos, setTotalIngresos] = useState<number>(0);
+  const [totalEgresos, setTotalEgresos] = useState<number>(0);
+  const [recentOperations, setRecentOperations] = useState<CashOperation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadCajas();
+    initializeCaja();
   }, []);
 
-  async function loadCajas() {
+  async function initializeCaja() {
     try {
-      const data = await cajasApi.getAll(true); // Solo cajas activas
-      setCajas(data);
-      
-      // Cargar estadísticas de cada caja
-      const statsPromises = data.map(async (caja: Caja) => {
-        try {
-          const [saldo, productos] = await Promise.all([
-            cajasApi.getSaldo(caja.id),
-            cajasApi.getProductos(caja.id),
-          ]);
-          return { id: caja.id, saldo: saldo.saldo, totalProductos: productos.length };
-        } catch (error) {
-          return { id: caja.id, saldo: 0, totalProductos: 0 };
-        }
-      });
-
-      const stats = await Promise.all(statsPromises);
-      const statsMap = new Map(stats.map(s => [s.id, s]));
-      setCajasStats(statsMap);
+      // Obtener la caja única
+      const cajas = await cajasApi.getAll(true);
+      if (cajas && cajas.length > 0) {
+        const caja = cajas[0];
+        setSelectedCaja(caja);
+        
+        // Cargar datos de la caja
+        const [balanceData, operationsData] = await Promise.all([
+          cashApi.getBalance(),
+          cashApi.getAll({ limit: 10 }),
+        ]);
+        
+        setSaldo(balanceData.saldo || 0);
+        setRecentOperations(operationsData || []);
+        
+        // Calcular totales
+        const ingresosTotal = operationsData
+          ?.filter((op: CashOperation) => op.tipo === 'INGRESO')
+          .reduce((sum: number, op: CashOperation) => sum + op.monto, 0) || 0;
+        
+        const egresosTotal = operationsData
+          ?.filter((op: CashOperation) => op.tipo === 'EGRESO')
+          .reduce((sum: number, op: CashOperation) => sum + op.monto, 0) || 0;
+        
+        setTotalIngresos(ingresosTotal);
+        setTotalEgresos(egresosTotal);
+      }
     } catch (error) {
-      console.error('Error loading cajas:', error);
+      console.error('Error initializing caja:', error);
     } finally {
       setLoading(false);
     }
   }
 
-  function handleSelectCaja(caja: Caja) {
-    setSelectedCaja(caja);
-    router.push('/ventas');
-  }
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-semibold text-lg">Cargando Cafetería CAM 15...</p>
         </div>
       </div>
     );
   }
-
+  
   return (
-    <div>
-      {/* School Header Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-6 mb-8 text-white">
-        <div className="flex items-center space-x-4">
+    <div className="max-w-7xl mx-auto">
+      {/* Header con logo y nombre */}
+      <div className="bg-gradient-to-r from-red-600 via-blue-600 to-amber-500 rounded-2xl shadow-xl p-8 mb-8 text-white">
+        <div className="flex items-center space-x-4 sm:space-x-6">
           <Image 
             src="/cam15_logo.png" 
-            alt="CAM15 Logo" 
+            alt="Cafetería CAM 15 Logo" 
             width={80} 
             height={80}
             className="object-contain bg-white rounded-lg p-2"
           />
-          <div>
-            <h1 className="text-2xl font-bold">Centro de Atención Múltiple No.15</h1>
-            <p className="text-lg">Taller de Formación Laboral</p>
-            <p className="text-xl font-semibold mt-1">La Tiendita - Sistema POS</p>
+          <div className="flex-1">
+            <h1 className="text-3xl sm:text-4xl font-black">Cafetería CAM 15</h1>
+            <p className="text-base sm:text-lg text-yellow-100 font-semibold">Centro de Atención Múltiple No.15</p>
+            <p className="text-base sm:text-lg text-yellow-100">Punto de Venta - Sistema de Cajas</p>
           </div>
         </div>
       </div>
 
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Selecciona una Caja</h2>
-        <p className="text-gray-600">Elige la caja con la que deseas trabajar</p>
+      {/* Botones de acción rápida */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <button
+          onClick={() => router.push('/ventas')}
+          className="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        >
+          <div className="text-4xl mb-2">🛒</div>
+          <div className="font-bold text-lg">Vender</div>
+          <div className="text-xs opacity-90">Ir a ventas</div>
+        </button>
+
+        <button
+          onClick={() => router.push('/productos')}
+          className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-300"
+        >
+          <div className="text-4xl mb-2">📦</div>
+          <div className="font-bold text-lg">Productos</div>
+          <div className="text-xs opacity-90">Gestionar</div>
+        </button>
+
+        <button
+          onClick={() => router.push('/recibos')}
+          className="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
+        >
+          <div className="text-4xl mb-2">📄</div>
+          <div className="font-bold text-lg">Recibos</div>
+          <div className="text-xs opacity-90">Historial</div>
+        </button>
+
+        <button
+          onClick={() => router.push('/caja')}
+          className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
+        >
+          <div className="text-4xl mb-2">💰</div>
+          <div className="font-bold text-lg">Caja</div>
+          <div className="text-xs opacity-90">Operaciones</div>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {cajas.map((caja) => {
-          const stats = cajasStats.get(caja.id) || { saldo: 0, totalProductos: 0 };
-          const iconMap: Record<string, string> = {
-            'Agua': '💧',
-            'Papelería': '📝',
-            'Panadería': '🍞',
-            'General': '📦'
-          };
-          
-          return (
-            <button
-              key={caja.id}
-              onClick={() => handleSelectCaja(caja)}
-              className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl hover:scale-105 transition-all border-4 border-transparent hover:border-blue-400 text-left"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-5xl">{iconMap[caja.nombre] || '🏪'}</div>
-                <div className="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">
-                  Activa
-                </div>
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">{caja.nombre}</h3>
-              {caja.descripcion && (
-                <p className="text-sm text-gray-600 mb-4">{caja.descripcion}</p>
-              )}
-              
-              <div className="space-y-2 mt-4 pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Saldo:</span>
-                  <span className="font-bold text-green-600">{formatCurrency(stats.saldo)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Productos:</span>
-                  <span className="font-bold text-blue-600">{stats.totalProductos}</span>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-center text-blue-600 font-semibold">
-                  <span>Seleccionar</span>
-                  <span className="ml-2">→</span>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {cajas.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <span className="text-6xl mb-4 block">📦</span>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay cajas disponibles</h3>
-          <p className="text-gray-600">Contacta al administrador para crear cajas</p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-lg border-l-4 border-green-600 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 font-semibold text-sm">Saldo Actual</p>
+              <p className="text-4xl font-black text-green-600 mt-2">{formatCurrency(saldo)}</p>
+            </div>
+            <div className="text-5xl opacity-30">💵</div>
+          </div>
         </div>
-      )}
+
+        <div className="bg-white rounded-xl shadow-lg border-l-4 border-blue-600 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 font-semibold text-sm">Total Ingresos</p>
+              <p className="text-4xl font-black text-blue-600 mt-2">{formatCurrency(totalIngresos)}</p>
+            </div>
+            <div className="text-5xl opacity-30">📈</div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg border-l-4 border-red-600 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 font-semibold text-sm">Total Egresos</p>
+              <p className="text-4xl font-black text-red-600 mt-2">{formatCurrency(totalEgresos)}</p>
+            </div>
+            <div className="text-5xl opacity-30">📉</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Operaciones recientes */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Últimas Operaciones</h2>
+        
+        {recentOperations && recentOperations.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="text-left py-3 px-4 font-bold text-gray-700">Tipo</th>
+                  <th className="text-left py-3 px-4 font-bold text-gray-700">Monto</th>
+                  <th className="text-left py-3 px-4 font-bold text-gray-700">Razón</th>
+                  <th className="text-left py-3 px-4 font-bold text-gray-700">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentOperations.map((op, idx) => (
+                  <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-4">
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        op.tipo === 'INGRESO' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {op.tipo}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-bold text-gray-900">{formatCurrency(op.monto)}</td>
+                    <td className="py-3 px-4 text-gray-600">{op.razon}</td>
+                    <td className="py-3 px-4 text-gray-600 text-sm">{new Date(op.fecha).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-600 text-lg">No hay operaciones registradas</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

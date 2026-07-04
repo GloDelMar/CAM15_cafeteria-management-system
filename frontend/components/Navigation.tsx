@@ -5,13 +5,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { logout } from '@/lib/auth';
-import { useCaja } from '@/contexts/CajaContext';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { selectedCaja, setSelectedCaja } = useCaja();
   
   // No mostrar navegación en la página de login
   if (pathname === '/login') {
@@ -19,120 +17,91 @@ const Navigation = () => {
   }
 
   const handleLogout = () => {
-    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+    if (confirm('¿Estás seguro?')) {
       logout();
-      setSelectedCaja(null);
       router.push('/login');
     }
     setIsMenuOpen(false);
   };
-
-  const handleChangeCaja = () => {
-    setSelectedCaja(null);
-    router.push('/');
-    setIsMenuOpen(false);
-  };
   
+  // Navegación simplificada para un solo caja
   const navItems = [
-    { href: '/', label: 'Dashboard', icon: '📊' },
-    { href: '/cajas', label: 'Gestión Cajas', icon: '⚙️' },
-    { href: '/ventas', label: 'Ventas', icon: '🛒', requiresCaja: true },
-    { href: '/productos', label: 'Productos', icon: '📦', requiresCaja: true },
-    { href: '/recibos', label: 'Recibos', icon: '📄', requiresCaja: true },
-    { href: '/deudores', label: 'Deudores', icon: '👥', requiresCaja: true },
-    { href: '/caja', label: 'Operaciones', icon: '💰', requiresCaja: true },
+    { href: '/', label: 'Inicio', icon: '🏠' },
+    { href: '/ventas', label: 'Vender', icon: '🛒' },
+    { href: '/productos', label: 'Productos', icon: '📦' },
+    { href: '/recibos', label: 'Recibos', icon: '📄' },
+    { href: '/deudores', label: 'Deudores', icon: '👥' },
+    { href: '/caja', label: 'Caja', icon: '💰' },
   ];
   
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <nav className="bg-gradient-to-r from-red-600 via-blue-600 to-amber-500 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+        <div className="flex items-center justify-between h-16 sm:h-20 md:h-24">
+          {/* Logo y Nombre */}
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-600 rounded-lg px-2 py-1">
             <Image 
               src="/cam15_logo.png" 
-              alt="CAM15 Logo" 
-              width={32} 
-              height={32}
-              className="object-contain sm:w-10 sm:h-10"
+              alt="Cafetería CAM 15 Logo" 
+              width={40} 
+              height={40}
+              className="object-contain sm:w-12 sm:h-12 md:w-14 md:h-14"
             />
             <div className="flex flex-col">
-              <span className="text-sm sm:text-lg font-bold text-gray-900 leading-tight">La Tiendita</span>
-              <span className="text-[10px] sm:text-xs text-gray-600">CAM No.15</span>
+              <span className="text-base sm:text-lg md:text-2xl font-bold text-white leading-tight">
+                Cafetería CAM 15
+              </span>
+              <span className="text-[10px] sm:text-xs md:text-sm text-yellow-100 font-semibold">
+                Punto de Venta
+              </span>
             </div>
           </Link>
 
-          {/* Caja actual - visible en mobile */}
-          {selectedCaja && (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200">
-              <span className="text-xs sm:text-sm font-semibold text-blue-900">Caja: {selectedCaja.nombre}</span>
-              <button
-                onClick={handleChangeCaja}
-                className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-800 underline"
-                title="Cambiar de caja"
-              >
-                Cambiar
-              </button>
-            </div>
-          )}
-          
           {/* Desktop menu */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center space-x-1 flex-1 justify-center px-6">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
-              const isDisabled = item.requiresCaja && !selectedCaja;
-              
-              if (isDisabled) {
-                return (
-                  <div
-                    key={item.href}
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
-                    title="Selecciona una caja primero"
-                  >
-                    <span className="mr-1">{item.icon}</span>
-                    {item.label}
-                  </div>
-                );
-              }
               
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2.5 rounded-lg text-sm md:text-base font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300 ${
                     isActive
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-white text-blue-600 shadow-md'
+                      : 'text-white hover:bg-white hover:bg-opacity-20'
                   }`}
+                  title={item.label}
                 >
                   <span className="mr-1">{item.icon}</span>
                   {item.label}
                 </Link>
               );
             })}
-            
-            <button
-              onClick={handleLogout}
-              className="ml-2 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-              title="Cerrar Sesión"
-            >
-              <span className="mr-1">🚪</span>
-              Salir
-            </button>
           </div>
+
+          {/* Logout button - Desktop */}
+          <button
+            onClick={handleLogout}
+            className="hidden sm:block px-4 py-2.5 bg-white text-red-600 font-bold rounded-lg hover:bg-yellow-100 transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300 text-sm md:text-base"
+            title="Cerrar sesión"
+          >
+            🚪 Salir
+          </button>
 
           {/* Hamburger button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Toggle menu"
+            className="lg:hidden p-3 rounded-lg text-white hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-all"
+            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={isMenuOpen}
           >
             <svg
-              className="w-6 h-6"
+              className="w-6 h-6 sm:w-7 sm:h-7"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth="2"
+              strokeWidth="2.5"
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
@@ -147,62 +116,33 @@ const Navigation = () => {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="lg:hidden py-3 border-t">
-            {/* Caja actual en mobile */}
-            {selectedCaja && (
-              <div className="flex items-center justify-between gap-2 px-3 py-2 mb-2 bg-blue-50 rounded-lg border border-blue-200">
-                <span className="text-xs font-semibold text-blue-900">Caja: {selectedCaja.nombre}</span>
-                <button
-                  onClick={handleChangeCaja}
-                  className="text-xs text-blue-600 hover:text-blue-800 underline"
-                >
-                  Cambiar
-                </button>
-              </div>
-            )}
-
-            <div className="space-y-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                const isDisabled = item.requiresCaja && !selectedCaja;
-                
-                if (isDisabled) {
-                  return (
-                    <div
-                      key={item.href}
-                      className="block px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
-                    >
-                      <span className="mr-2">{item.icon}</span>
-                      {item.label}
-                    </div>
-                  );
-                }
-                
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`block px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <span className="mr-2">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                );
-              })}
+          <div className="lg:hidden py-4 border-t-2 border-white border-opacity-30 space-y-2">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
               
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-              >
-                <span className="mr-2">🚪</span>
-                Salir
-              </button>
-            </div>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block px-4 py-3 rounded-lg text-base font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300 ${
+                    isActive
+                      ? 'bg-white text-blue-600 shadow-md'
+                      : 'text-white hover:bg-white hover:bg-opacity-20'
+                  }`}
+                >
+                  <span className="mr-2 text-lg">{item.icon}</span>
+                  {item.label}
+                </Link>
+              );
+            })}
+            
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-3 bg-white text-red-600 font-bold rounded-lg hover:bg-yellow-100 transition-all focus:outline-none focus:ring-2 focus:ring-yellow-300 text-base"
+            >
+              🚪 Cerrar sesión
+            </button>
           </div>
         )}
       </div>
