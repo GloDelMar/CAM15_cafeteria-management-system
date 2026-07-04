@@ -31,14 +31,14 @@ export default function LoginPage() {
         {/* Logo y título */}
         <div className="text-center mb-8">
           <div className="bg-blue-900 w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
-            <span className="text-5xl">🏪</span>
+            <span className="text-5xl">☕</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">La Tiendita</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Cafetería CAM 15</h1>
           <p className="text-lg text-gray-600 font-medium">
-            Taller de Formación Laboral
+            Punto de Venta
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            CAM15 - Nayarit
+            Centro de Atención Múltiple No. 15
           </p>
         </div>
 
