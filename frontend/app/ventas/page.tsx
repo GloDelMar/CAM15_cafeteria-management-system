@@ -562,15 +562,15 @@ export default function VentasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-50 p-2 sm:p-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-50 p-2 sm:p-4">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Productos */}
         <div className="lg:col-span-2">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-2">
-            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-orange-700 flex items-center gap-2">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-amber-900 flex items-center gap-2">
               🛒 <span>Vender</span>
             </h1>
-            <div className="bg-gradient-to-r from-red-500 to-orange-500 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg w-full sm:w-auto text-center lg:hidden">
+            <div className="bg-gradient-to-r from-amber-900 to-yellow-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg w-full sm:w-auto text-center lg:hidden">
               <span className="text-xs font-semibold text-white">🏪 {selectedCaja?.nombre}</span>
             </div>
           </div>
@@ -581,7 +581,7 @@ export default function VentasPage() {
             placeholder="🔍 Buscar producto..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-orange-300 rounded-lg sm:rounded-xl mb-3 sm:mb-4 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-amber-300 rounded-lg sm:rounded-xl mb-3 sm:mb-4 focus:ring-2 focus:ring-amber-700 focus:border-amber-700"
             aria-label="Buscar productos"
           />
 
@@ -593,8 +593,8 @@ export default function VentasPage() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-3 rounded-lg font-bold whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   selectedCategory === cat
-                    ? 'bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white shadow-lg focus:ring-yellow-300'
-                    : 'bg-white text-gray-700 border-2 border-orange-300 hover:border-orange-500 hover:bg-orange-50 focus:ring-orange-300'
+                    ? 'bg-gradient-to-r from-amber-900 via-amber-800 to-yellow-700 text-white shadow-lg focus:ring-amber-600'
+                    : 'bg-white text-gray-700 border-2 border-amber-300 hover:border-amber-700 hover:bg-amber-50 focus:ring-amber-600'
                 }`}
                 aria-pressed={selectedCategory === cat}
               >
@@ -612,14 +612,14 @@ export default function VentasPage() {
               <div
                 key={product.id}
                 onClick={() => openQuantityModal(product)}
-                className="bg-white rounded-lg sm:rounded-xl shadow-md p-2 sm:p-3 cursor-pointer hover:shadow-xl hover:scale-105 transition-all border-2 border-transparent hover:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500"
+                className="bg-white rounded-lg sm:rounded-xl shadow-md p-2 sm:p-3 cursor-pointer hover:shadow-xl hover:scale-105 transition-all border-2 border-transparent hover:border-amber-400 focus-within:ring-2 focus-within:ring-amber-700"
                 role="button"
                 tabIndex={0}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') openQuantityModal(product);
                 }}
               >
-                <div className="aspect-square bg-gradient-to-br from-orange-100 to-amber-100 rounded-md sm:rounded-lg mb-1.5 sm:mb-2 flex items-center justify-center overflow-hidden">
+                <div className="aspect-square bg-gradient-to-br from-amber-100 to-yellow-100 rounded-md sm:rounded-lg mb-1.5 sm:mb-2 flex items-center justify-center overflow-hidden">
                   {product.image_url ? (
                     <img
                       src={resolveProductImageUrl(product.id, product.image_url)}
@@ -639,8 +639,8 @@ export default function VentasPage() {
                   )}
                 </div>
                 <h3 className="font-bold text-gray-900 mb-0.5 sm:mb-1 text-xs sm:text-sm leading-tight line-clamp-2">{product.nombre}</h3>
-                <p className="text-sm sm:text-lg font-bold text-orange-600 mb-0.5">{formatCurrency(product.precio)}</p>
-                <p className="text-[10px] sm:text-xs text-gray-600 bg-orange-100 px-1.5 sm:px-2 py-0.5 rounded-full inline-block">
+                <p className="text-sm sm:text-lg font-bold text-amber-700 mb-0.5">{formatCurrency(product.precio)}</p>
+                <p className="text-[10px] sm:text-xs text-gray-600 bg-amber-100 px-1.5 sm:px-2 py-0.5 rounded-full inline-block">
                   📦 {product.stock}
                 </p>
               </div>
@@ -650,8 +650,8 @@ export default function VentasPage() {
 
         {/* Carrito */}
         <div className="lg:sticky lg:top-20 lg:h-fit">
-          <div className="bg-gradient-to-br from-white to-amber-50 rounded-lg sm:rounded-xl shadow-xl p-3 sm:p-4 border-2 border-orange-300">
-            <h2 className="text-base sm:text-xl font-bold mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-orange-700">
+          <div className="bg-gradient-to-br from-white to-yellow-50 rounded-lg sm:rounded-xl shadow-xl p-3 sm:p-4 border-2 border-amber-300">
+            <h2 className="text-base sm:text-xl font-bold mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-amber-900">
               🛍️ <span>Carrito</span>
             </h2>
 

@@ -1,25 +1,30 @@
 @import "tailwindcss";
 
-/* CAM 15 Color Palette */
+/* CAM 15 Accessible Color Palette - Warm, Comfortable */
 :root {
-  --background: #faf8f3;
-  --foreground: #1a1a1a;
-  --primary-red: #ef4444;
-  --primary-blue: #2563eb;
-  --primary-yellow: #eab308;
-  --primary-orange: #f97316;
-  --primary-green: #22c55e;
-  --primary-purple: #a855f7;
-  --primary-brown: #78350f;
-  --beige: #f5f1e8;
-  --cafe: #3f2d1c;
-  --black: #000000;
+  --background: #FAF7F2;
+  --foreground: #2D2D2D;
+  
+  /* Colores principales - Café, Beige, Arena, Negro */
+  --primary-cafe-dark: #6B4423;
+  --primary-cafe: #8B5A2B;
+  --primary-beige: #F5E6D3;
+  --primary-arena: #D2B48C;
+  --primary-negro: #1A1A1A;
+  
+  /* Azul - Uso mínimo */
+  --primary-blue-dark: #1E3A8A;
+  --primary-blue: #1E40AF;
+  
+  /* Acentos complementarios */
+  --accent-sand: #E8DACC;
+  --accent-tan: #C19A6B;
   
   /* Accesibilidad */
   --text-lg: 18px;
   --text-xl: 24px;
   --text-2xl: 32px;
-  --focus-ring: 4px solid #eab308;
+  --focus-ring: 3px solid #8B5A2B;
   --focus-offset: 2px;
 }
 
@@ -32,8 +37,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1A1A1A;
+    --foreground: #F5E6D3;
   }
 }
 
@@ -90,7 +95,7 @@ a {
 }
 
 a:visited {
-  color: var(--primary-purple);
+  color: var(--primary-cafe-dark);
 }
 
 /* Reducir animaciones para usuarios sensibles */
