@@ -640,7 +640,7 @@ export default function VentasPage() {
                 </div>
                 <h3 className="font-bold text-gray-900 mb-0.5 sm:mb-1 text-xs sm:text-sm leading-tight line-clamp-2">{product.nombre}</h3>
                 <p className="text-sm sm:text-lg font-bold text-orange-700 mb-0.5">{formatCurrency(product.precio)}</p>
-                <p className="text-[10px] sm:text-xs text-gray-600 bg-amber-100 px-1.5 sm:px-2 py-0.5 rounded-full inline-block">
+                <p className="text-[10px] sm:text-xs text-gray-600 bg-orange-100 px-1.5 sm:px-2 py-0.5 rounded-full inline-block">
                   📦 {product.stock}
                 </p>
               </div>
@@ -679,7 +679,7 @@ export default function VentasPage() {
                     
                     {/* Ingredientes */}
                     {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
-                      <div className="text-xs text-amber-800 mb-2 pl-1 border-l-2 border-amber-400">
+                      <div className="text-xs text-orange-800 mb-2 pl-1 border-l-2 border-orange-400">
                         {Object.entries(item.selectedOptions).map(([groupKey, values]) => (
                           values.length > 0 && (
                             <div key={groupKey}>
@@ -701,7 +701,7 @@ export default function VentasPage() {
                         </button>
                         <button
                           onClick={() => openQuantityModal(item.product)}
-                          className="w-8 sm:w-10 text-center font-bold text-sm sm:text-lg bg-white rounded-md py-0.5 border-2 border-amber-300 hover:border-amber-500"
+                          className="w-8 sm:w-10 text-center font-bold text-sm sm:text-lg bg-white rounded-md py-0.5 border-2 border-orange-300 hover:border-orange-500"
                         >
                           {item.quantity}
                         </button>
@@ -712,7 +712,7 @@ export default function VentasPage() {
                           +
                         </button>
                       </div>
-                      <span className="font-bold text-amber-900 text-xs sm:text-sm">
+                      <span className="font-bold text-orange-900 text-xs sm:text-sm">
                         {formatCurrency(item.product.precio * item.quantity)}
                       </span>
                     </div>
@@ -721,10 +721,10 @@ export default function VentasPage() {
               </div>
             )}
 
-            <div className="border-t-2 border-amber-300 pt-3 mb-3">
-              <div className="flex justify-between items-center bg-gradient-to-r from-amber-100 to-yellow-100 p-2 sm:p-3 rounded-lg mb-3 border-2 border-amber-400">
-                <span className="text-sm sm:text-base font-bold text-amber-900">Total:</span>
-                <span className="text-xl sm:text-2xl font-bold text-amber-900">{formatCurrency(calculateTotal())}</span>
+            <div className="border-t-2 border-orange-300 pt-3 mb-3">
+              <div className="flex justify-between items-center bg-orange-100 p-2 sm:p-3 rounded-lg mb-3 border-2 border-orange-400">
+                <span className="text-sm sm:text-base font-bold text-orange-900">Total:</span>
+                <span className="text-xl sm:text-2xl font-bold text-orange-900">{formatCurrency(calculateTotal())}</span>
               </div>
 
               <div className="space-y-2 sm:space-y-3">
@@ -794,7 +794,7 @@ export default function VentasPage() {
                   </div>
                 )}
 
-                <label className="flex items-center gap-2 sm:gap-3 cursor-pointer bg-yellow-100 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border-2 border-yellow-300">
+                <label className="flex items-center gap-2 sm:gap-3 cursor-pointer bg-orange-100 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border-2 border-orange-300">
                   <input
                     type="checkbox"
                     checked={isCredit}
@@ -808,7 +808,7 @@ export default function VentasPage() {
                   <>
                     <button
                       onClick={abrirSelectorMonedas}
-                      className="w-full bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 text-white px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-xl font-bold flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl transition-all"
+                      className="w-full bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-xl font-bold flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-offset-2"
                     >
                       💰 <span>¿Con cuánto pagas?</span>
                     </button>
@@ -832,7 +832,7 @@ export default function VentasPage() {
                           generarSugerenciasCambio(cambio);
                           setShowChangeSuggestionModal(true);
                         }}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-lg sm:text-xl md:text-2xl"
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-lg sm:text-xl md:text-2xl focus:outline-none focus:ring-4 focus:ring-orange-400"
                         title="Ver sugerencias de cambio"
                       >
                         💡
@@ -862,9 +862,9 @@ export default function VentasPage() {
       {/* Modal de selección de ingredientes y cantidad */}
       {showIngredientsModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 z-50 overflow-y-auto">
-          <div className="bg-gradient-to-b from-amber-50 to-white rounded-2xl max-w-sm w-full p-4 my-2 max-h-[95vh] overflow-y-auto border-4 border-amber-300">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-4 my-2 max-h-[95vh] overflow-y-auto border-4 border-orange-300">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-bold text-amber-900">🛍️ Personalizar Comanda</h2>
+              <h2 className="text-xl font-bold text-orange-900">🛍️ Personalizar Comanda</h2>
               <button
                 onClick={() => {
                   setShowIngredientsModal(false);
@@ -878,9 +878,9 @@ export default function VentasPage() {
               </button>
             </div>
 
-            <div className="bg-white rounded-lg p-3 mb-4 border-l-4 border-amber-600">
+            <div className="bg-white rounded-lg p-3 mb-4 border-l-4 border-orange-600">
               <p className="text-base font-bold text-gray-900">{selectedProduct.nombre}</p>
-              <p className="text-lg font-bold text-amber-600">{formatCurrency(selectedProduct.precio)}</p>
+              <p className="text-lg font-bold text-orange-600">{formatCurrency(selectedProduct.precio)}</p>
             </div>
 
             {/* Ingredientes / Opciones */}
@@ -907,7 +907,7 @@ export default function VentasPage() {
                         const emoji = ingredientEmojis[choice.toLowerCase().replace(/ /g, '_')] || '✓';
                         
                         return (
-                          <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
+                          <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-orange-50 p-2 rounded">
                             <input
                               type={group.selection_type === 'single' ? 'radio' : 'checkbox'}
                               name={group.key}
@@ -955,10 +955,10 @@ export default function VentasPage() {
             <button
               onClick={confirmQuantity}
               disabled={selectedQuantity === 0}
-              className={`w-full py-3 rounded-lg font-bold text-base shadow-lg transition-all ${
+              className={`w-full py-3 rounded-lg font-bold text-base shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-offset-2 ${
                 selectedQuantity === 0
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white hover:scale-105'
+                  : 'bg-green-600 hover:bg-green-700 text-white hover:scale-105 focus:ring-green-500'
               }`}
             >
               ✅ Agregar al Carrito
@@ -990,9 +990,9 @@ export default function VentasPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 border-2 sm:border-3 md:border-4 border-yellow-400">
+            <div className="bg-orange-100 rounded-lg sm:rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 border-2 sm:border-3 md:border-4 border-orange-400">
               <div className="flex justify-between items-center mb-3 sm:mb-4">
-                <h3 className="text-sm sm:text-base md:text-lg font-bold text-yellow-900">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold text-orange-900">
                   Opción {currentSuggestionIndex + 1} de {changeSuggestions.length}
                 </h3>
               </div>
@@ -1021,7 +1021,7 @@ export default function VentasPage() {
                       prev > 0 ? prev - 1 : changeSuggestions.length - 1
                     );
                   }}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-lg font-bold transition-colors"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-lg font-bold transition-colors focus:outline-none focus:ring-4 focus:ring-orange-400"
                 >
                   ⬅️ Anterior
                 </button>
@@ -1031,7 +1031,7 @@ export default function VentasPage() {
                       (prev + 1) % changeSuggestions.length
                     );
                   }}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-lg font-bold transition-colors"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-lg font-bold transition-colors focus:outline-none focus:ring-4 focus:ring-orange-400"
                 >
                   Siguiente ➡️
                 </button>
