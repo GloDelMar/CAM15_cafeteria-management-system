@@ -16,6 +16,7 @@ interface Product {
   image_url?: string;
   caja_id?: number;
   category?: string;
+  beverage_type?: string;
   option_groups?: ProductOptionGroup[];
 }
 
@@ -166,7 +167,9 @@ export default function VentasPage() {
         precio: p.price,
         stock: p.stock || 999, // Stock por defecto si no existe
         image_url: p.image_url,
-        caja_id: p.caja_id
+        caja_id: p.caja_id,
+        category: p.category || 'alimentos',
+        beverage_type: p.beverage_type || null
       }));
       
       console.log('[VENTAS] 🔄 Productos mapeados:', mappedProducts);
@@ -859,7 +862,7 @@ export default function VentasPage() {
         </div>
       </div>
 
-      {/* Modal de selección de ingredientes y cantidad */}
+      {/* Modal de selección de características y cantidad */}
       {showIngredientsModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 z-50 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-sm w-full p-4 my-2 max-h-[95vh] overflow-y-auto border-4 border-blue-300">
@@ -883,62 +886,145 @@ export default function VentasPage() {
               <p className="text-lg font-bold text-blue-900">{formatCurrency(selectedProduct.precio)}</p>
             </div>
 
-            {/* Ingredientes / Opciones */}
-            {selectedProduct.option_groups && selectedProduct.option_groups.length > 0 && (
+            {/* Características según categoría */}
+            {selectedProduct.category === 'alimentos' && (
               <div className="mb-4 space-y-3">
-                <p className="text-sm font-bold text-gray-700">🌶️ Ingredientes Disponibles:</p>
-                {selectedProduct.option_groups.map((group) => (
-                  <div key={group.key} className="bg-white p-3 rounded-lg border border-gray-200">
-                    <p className="text-sm font-semibold text-gray-900 mb-2">{group.label}</p>
-                    <div className="space-y-2">
-                      {group.choices.map((choice) => {
-                        const isSelected = (selectedIngredients[group.key] || []).includes(choice);
-                        const ingredientEmojis: Record<string, string> = {
-                          'cebolla': '🧅',
-                          'chile': '🌶️',
-                          'crema': '🤍',
-                          'jitomate': '🍅',
-                          'lechuga': '🥬',
-                          'mayonesa': '🤎',
-                          'sin_azucar': '🚫',
-                          'caliente': '🔥',
-                          'frio': '❄️',
-                        };
-                        const emoji = ingredientEmojis[choice.toLowerCase().replace(/ /g, '_')] || '✓';
-                        
-                        return (
-                          <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
-                            <input
-                              type={group.selection_type === 'single' ? 'radio' : 'checkbox'}
-                              name={group.key}
-                              value={choice}
-                              checked={isSelected}
-                              onChange={(e) => {
-                                if (group.selection_type === 'single') {
-                                  setSelectedIngredients({
-                                    ...selectedIngredients,
-                                    [group.key]: e.target.checked ? [choice] : []
-                                  });
-                                } else {
-                                  const current = selectedIngredients[group.key] || [];
-                                  setSelectedIngredients({
-                                    ...selectedIngredients,
-                                    [group.key]: e.target.checked
-                                      ? [...current, choice]
-                                      : current.filter(c => c !== choice)
-                                  });
-                                }
-                              }}
-                              className="w-4 h-4 cursor-pointer"
-                            />
-                            <span className="text-2xl">{emoji}</span>
-                            <span className="text-sm text-gray-700">{choice}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
+                <p className="text-sm font-bold text-gray-700">🌶️ Ingredientes:</p>
+                
+                {/* Salsas/Cremas */}
+                <div className="bg-white p-3 rounded-lg border border-gray-200">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">🤍 Salsa/Crema:</p>
+                  <div className="space-y-2">
+                    {['mayonesa', 'crema'].map((choice) => {
+                      const isSelected = (selectedIngredients['salsa'] || []).includes(choice);
+                      return (
+                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
+                          <input
+                            type="checkbox"
+                            value={choice}
+                            checked={isSelected}
+                            onChange={(e) => {
+                              const current = selectedIngredients['salsa'] || [];
+                              setSelectedIngredients({
+                                ...selectedIngredients,
+                                'salsa': e.target.checked
+                                  ? [...current, choice]
+                                  : current.filter(c => c !== choice)
+                              });
+                            }}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-2xl">{choice === 'mayonesa' ? '🤎' : '🤍'}</span>
+                          <span className="text-sm text-gray-700 capitalize">{choice}</span>
+                        </label>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
+
+                {/* Verduras */}
+                <div className="bg-white p-3 rounded-lg border border-gray-200">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">🥬 Verduras:</p>
+                  <div className="space-y-2">
+                    {['cebolla', 'jitomate', 'lechuga', 'chile'].map((choice) => {
+                      const isSelected = (selectedIngredients['verduras'] || []).includes(choice);
+                      const emojiMap: Record<string, string> = {
+                        'cebolla': '🧅',
+                        'jitomate': '🍅',
+                        'lechuga': '🥬',
+                        'chile': '🌶️'
+                      };
+                      return (
+                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
+                          <input
+                            type="checkbox"
+                            value={choice}
+                            checked={isSelected}
+                            onChange={(e) => {
+                              const current = selectedIngredients['verduras'] || [];
+                              setSelectedIngredients({
+                                ...selectedIngredients,
+                                'verduras': e.target.checked
+                                  ? [...current, choice]
+                                  : current.filter(c => c !== choice)
+                              });
+                            }}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-2xl">{emojiMap[choice]}</span>
+                          <span className="text-sm text-gray-700 capitalize">{choice}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Para bebidas */}
+            {selectedProduct.category === 'bebidas' && (
+              <div className="mb-4 space-y-3">
+                <p className="text-sm font-bold text-gray-700">☕ Características de Bebida:</p>
+
+                {/* Temperatura */}
+                <div className="bg-white p-3 rounded-lg border border-gray-200">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">🌡️ Temperatura:</p>
+                  <div className="space-y-2">
+                    {['fria', 'caliente'].map((choice) => {
+                      const isSelected = (selectedIngredients['temperatura'] || []).includes(choice);
+                      const label = choice === 'fria' ? 'Fría ❄️' : 'Caliente ☕';
+                      return (
+                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
+                          <input
+                            type="radio"
+                            name="temperatura"
+                            value={choice}
+                            checked={isSelected}
+                            onChange={(e) => {
+                              setSelectedIngredients({
+                                ...selectedIngredients,
+                                'temperatura': e.target.checked ? [choice] : []
+                              });
+                            }}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-2xl">{choice === 'fria' ? '❄️' : '☕'}</span>
+                          <span className="text-sm text-gray-700">{label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Azúcar */}
+                <div className="bg-white p-3 rounded-lg border border-gray-200">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">🍯 Azúcar:</p>
+                  <div className="space-y-2">
+                    {['con_azucar', 'sin_azucar'].map((choice) => {
+                      const isSelected = (selectedIngredients['azucar'] || []).includes(choice);
+                      const label = choice === 'con_azucar' ? 'Con azúcar 🍯' : 'Sin azúcar ☹️';
+                      return (
+                        <label key={choice} className="flex items-center gap-2 cursor-pointer hover:bg-amber-50 p-2 rounded">
+                          <input
+                            type="radio"
+                            name="azucar"
+                            value={choice}
+                            checked={isSelected}
+                            onChange={(e) => {
+                              setSelectedIngredients({
+                                ...selectedIngredients,
+                                'azucar': e.target.checked ? [choice] : []
+                              });
+                            }}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-2xl">{choice === 'con_azucar' ? '🍯' : '☹️'}</span>
+                          <span className="text-sm text-gray-700">{label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
