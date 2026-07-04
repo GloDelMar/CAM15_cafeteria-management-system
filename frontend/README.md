@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend - Cafeteria CAM 15
 
-## Getting Started
+Aplicacion web del sistema POS (Next.js App Router).
 
-First, run the development server:
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+
+## Requisitos
+
+- Node.js 20+
+- npm 10+
+
+## Configuracion
+
+1. Instalar dependencias:
+
+```bash
+npm install
+```
+
+2. Crear frontend/.env.local:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_AUTH_PASSWORD=cicloescolar2025-2026
+```
+
+## Ejecutar en desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Si 3000 esta ocupado:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev -- --port 3002
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build de produccion
 
-## Learn More
+```bash
+npm run build
+npm run start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Estructura importante
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- app/page.tsx: pantalla principal de ventas
+- app/comandas/page.tsx: vista de comandas para cocina
+- app/productos/page.tsx: gestion de productos
+- app/deudores/page.tsx: gestion de deudores
+- app/caja/page.tsx: operaciones de caja
+- components/Navigation.tsx: barra superior y navegacion
+- lib/api.ts: cliente HTTP y tipos compartidos
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Flujo general
 
-## Deploy on Vercel
+1. Login con clave local (NEXT_PUBLIC_AUTH_PASSWORD).
+2. Operacion de ventas y registro de transacciones.
+3. Generacion/consulta de comandas y estado de entrega.
+4. Consulta de recibos, caja y deudores.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Notas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Este frontend depende de la API del backend en NEXT_PUBLIC_API_URL.
+- Si cambias dominio o puerto del backend, actualiza .env.local.
