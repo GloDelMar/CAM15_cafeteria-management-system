@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Bloquea commits cuando hay repos Git anidados dentro del proyecto.
+# Permite únicamente el .git de la raíz actual.
+if find . -mindepth 2 \( -name .git -o -name '.git.backup_*' \) -print -quit | grep -q .; then
+  echo ""
+  echo "ERROR: Se detectaron repos Git anidados o backups de .git dentro del proyecto."
+  echo "Esto puede reconectar accidentalmente el repo con otro remoto."
+  echo ""
+  echo "Elementos detectados:"
+  find . -mindepth 2 \( -name .git -o -name '.git.backup_*' \) -print
+  echo ""
+  echo "Accion: mueve o elimina esos directorios antes de commitear."
+  exit 1
+fi
