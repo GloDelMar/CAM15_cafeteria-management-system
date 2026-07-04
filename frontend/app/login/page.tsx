@@ -30,8 +30,8 @@ export default function LoginPage() {
       <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full">
         {/* Logo y título */}
         <div className="text-center mb-8">
-          <div className="bg-blue-900 w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
-            <span className="text-5xl">☕</span>
+          <div className="bg-blue-900 w-40 h-40 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl">
+            <span className="text-9xl">☕</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Cafetería CAM 15</h1>
           <p className="text-lg text-gray-600 font-medium">
