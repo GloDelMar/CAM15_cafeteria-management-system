@@ -17,7 +17,7 @@ interface CashOperation {
 
 export default function CajaPage() {
   const router = useRouter();
-  const { selectedCaja } = useCaja();
+  const { selectedCaja, isLoading: cajaLoading } = useCaja();
   const [operations, setOperations] = useState<CashOperation[]>([]);
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -28,12 +28,16 @@ export default function CajaPage() {
   const [stats, setStats] = useState({ ingresos: 0, egresos: 0, saldo_inicial: 0 });
 
   useEffect(() => {
+    if (cajaLoading) {
+      return;
+    }
+
     if (!selectedCaja) {
       router.push('/');
       return;
     }
     loadData();
-  }, [selectedCaja]);
+  }, [selectedCaja, cajaLoading, router]);
 
   async function loadData() {
     if (!selectedCaja) return;

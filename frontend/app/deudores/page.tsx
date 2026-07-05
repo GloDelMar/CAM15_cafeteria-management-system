@@ -17,7 +17,7 @@ interface Debtor {
 
 export default function DeudoresPage() {
   const router = useRouter();
-  const { selectedCaja } = useCaja();
+  const { selectedCaja, isLoading: cajaLoading } = useCaja();
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({ total_deudores: 0, total_deuda: 0, promedio_deuda: 0 });
@@ -27,13 +27,17 @@ export default function DeudoresPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    if (cajaLoading) {
+      return;
+    }
+
     if (!selectedCaja) {
       router.push('/');
       return;
     }
     loadDebtors();
     loadSummary();
-  }, [selectedCaja]);
+  }, [selectedCaja, cajaLoading, router]);
 
   async function loadDebtors() {
     if (!selectedCaja) return;

@@ -21,7 +21,7 @@ const maestrosConCredito = [
 
 export default function RecibosPage() {
   const router = useRouter();
-  const { selectedCaja } = useCaja();
+  const { selectedCaja, isLoading: cajaLoading } = useCaja();
   const [viewMode, setViewMode] = useState<'maestros' | 'todas'>('maestros');
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [teacherSummary, setTeacherSummary] = useState<any>(null);
@@ -31,11 +31,15 @@ export default function RecibosPage() {
   const [selectedTransactions, setSelectedTransactions] = useState<Set<number>>(new Set());
 
   useEffect(() => {
+    if (cajaLoading) {
+      return;
+    }
+
     if (!selectedCaja) {
       router.push('/');
       return;
     }
-  }, [selectedCaja]);
+  }, [selectedCaja, cajaLoading, router]);
 
   useEffect(() => {
     if (viewMode === 'todas') {

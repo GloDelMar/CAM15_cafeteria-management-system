@@ -28,7 +28,7 @@ interface Caja {
 
 export default function ProductsPage() {
   const router = useRouter();
-  const { selectedCaja } = useCaja();
+  const { selectedCaja, isLoading: cajaLoading } = useCaja();
   const [products, setProducts] = useState<Product[]>([]);
   const [cajas, setCajas] = useState<Caja[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,13 +47,17 @@ export default function ProductsPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
+    if (cajaLoading) {
+      return;
+    }
+
     if (!selectedCaja) {
       router.push('/');
       return;
     }
     loadCajas();
     loadProducts();
-  }, [selectedCaja]);
+  }, [selectedCaja, cajaLoading, router]);
 
   async function loadCajas() {
     try {
