@@ -151,7 +151,6 @@ export default function ComandasPage() {
     try {
       const data = await transactionsApi.getAll({
         caja_id: selectedCaja.id,
-        pagado: 'SI',
         limit: 300,
       });
 
@@ -240,7 +239,7 @@ export default function ComandasPage() {
               🍽️ Comandas del Día
             </h1>
             <p className="text-amber-50 mt-2 text-sm sm:text-base">
-              Solo comandas pagadas creadas en las ultimas {COMANDA_WINDOW_HOURS} horas
+              Comandas creadas en las ultimas {COMANDA_WINDOW_HOURS} horas (pagadas y pendientes de pago)
             </p>
           </div>
 
@@ -300,6 +299,15 @@ export default function ComandasPage() {
                           <p className="text-sm font-semibold text-amber-900/80">
                             {transaction.grupo || 'General'}
                           </p>
+                          <span
+                            className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-xs font-bold ${
+                              transaction.pagado === 'SI'
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : 'bg-red-100 text-red-800 border border-red-300'
+                            }`}
+                          >
+                            {transaction.pagado === 'SI' ? 'Pagado' : 'Pendiente de pago'}
+                          </span>
                         </div>
                       </div>
 
@@ -414,6 +422,9 @@ export default function ComandasPage() {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
+                        </p>
+                        <p className={`text-xs font-semibold ${transaction.pagado === 'SI' ? 'text-emerald-700' : 'text-red-700'}`}>
+                          {transaction.pagado === 'SI' ? 'Pagado' : 'Pendiente de pago'}
                         </p>
                       </div>
                       <button
