@@ -248,6 +248,12 @@ async def download_transaction_ticket(transaction_id: int):
 async def create_transaction(transaction: TransactionCreate):
     """Crear una nueva transacción"""
     try:
+        if transaction.pagado == "NO" and not transaction.grupo.strip():
+            raise HTTPException(
+                status_code=422,
+                detail="El grupo es obligatorio para registrar una venta a crédito",
+            )
+
         transaction_dict = transaction.model_dump()
         transaction_dict["caja_id"] = normalize_caja_id(transaction_dict.get("caja_id"))
         transaction_dict["id"] = get_next_sequence("transactions")

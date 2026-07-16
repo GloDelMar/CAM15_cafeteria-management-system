@@ -82,7 +82,7 @@ class TransactionOptionSelection(BaseModel):
     values: List[str] = Field(default_factory=list)
 
 class TransactionBase(BaseModel):
-    cliente: str = "Cliente"
+    cliente: str = Field(..., min_length=1, max_length=200)
     grupo: str = "General"
     productos: List[ProductInTransaction]
     total: float = Field(..., gt=0)

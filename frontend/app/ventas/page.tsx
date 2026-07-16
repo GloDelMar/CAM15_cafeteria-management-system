@@ -625,6 +625,8 @@ export default function VentasPage() {
 
   async function handleCompleteSale() {
     console.log('[VENTAS] 🚀 handleCompleteSale iniciado');
+    const normalizedCliente = cliente.trim();
+    const normalizedGrupo = grupo.trim();
     
     // Prevenir múltiples ejecuciones
     if (isProcessing) {
@@ -643,9 +645,15 @@ export default function VentasPage() {
       return;
     }
 
-    if (isCredit && !cliente) {
-      console.log('[VENTAS] ❌ Falta seleccionar cliente para crédito');
-      alert('Por favor selecciona un cliente para la venta a crédito');
+    if (!normalizedCliente) {
+      console.log('[VENTAS] ❌ Falta capturar nombre del cliente');
+      alert('Por favor agrega el nombre del cliente antes de realizar el pago');
+      return;
+    }
+
+    if (isCredit && !normalizedGrupo) {
+      console.log('[VENTAS] ❌ Falta capturar grupo para venta a crédito');
+      alert('Por favor agrega el grupo del cliente para la venta a crédito');
       return;
     }
 
@@ -688,8 +696,8 @@ export default function VentasPage() {
       const transaction = await transactionsApi.create({
         productos: productosArray,
         total,
-        cliente: cliente || 'Cliente general',
-        grupo: grupo || 'General',
+        cliente: normalizedCliente,
+        grupo: isCredit ? normalizedGrupo : (normalizedGrupo || 'General'),
         pagado: isCredit ? 'NO' : 'SI',
         pago: paymentAmount,
         cambio: change,
@@ -902,14 +910,14 @@ export default function VentasPage() {
                   <div className="space-y-2">
                     <input
                       type="text"
-                      placeholder="👤 Nombre del cliente"
+                      placeholder="👤 Nombre del cliente *"
                       value={cliente}
                       onChange={(e) => setCliente(e.target.value)}
                       className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-blue-900"
                     />
                     <input
                       type="text"
-                      placeholder="👥 Grupo (opcional)"
+                      placeholder={isCredit ? '👥 Grupo *' : '👥 Grupo (opcional)'}
                       value={grupo}
                       onChange={(e) => setGrupo(e.target.value)}
                       className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-blue-900"
@@ -945,7 +953,7 @@ export default function VentasPage() {
                       }}
                       className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-blue-900 bg-white"
                     >
-                      <option value="">👤 Seleccionar maestro (opcional)</option>
+                      <option value="">👤 Seleccionar cliente *</option>
                       {maestrosConCredito.map((maestro, idx) => (
                         <option key={idx} value={`${maestro.nombre}|${maestro.grupo}`}>
                           {maestro.nombre} - {maestro.grupo}
@@ -961,6 +969,18 @@ export default function VentasPage() {
                       </div>
                     )}
                   </div>
+                )}
+
+                {!cliente.trim() && (
+                  <p className="text-xs sm:text-sm text-red-700 font-semibold bg-red-50 border border-red-200 rounded-md px-2 py-1.5">
+                    El nombre del cliente es obligatorio para completar la venta.
+                  </p>
+                )}
+
+                {isCredit && !grupo.trim() && (
+                  <p className="text-xs sm:text-sm text-red-700 font-semibold bg-red-50 border border-red-200 rounded-md px-2 py-1.5">
+                    El grupo es obligatorio para registrar una venta a crédito.
+                  </p>
                 )}
 
                 <label className="flex items-center gap-2 sm:gap-3 cursor-pointer bg-amber-100 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border-2 border-blue-300">
@@ -1015,9 +1035,9 @@ export default function VentasPage() {
 
             <button
               onClick={handleCompleteSale}
-              disabled={cart.length === 0 || isProcessing}
+              disabled={cart.length === 0 || isProcessing || !cliente.trim() || (isCredit && !grupo.trim())}
               className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg shadow-lg transition-all ${
-                cart.length === 0 || isProcessing
+                cart.length === 0 || isProcessing || !cliente.trim() || (isCredit && !grupo.trim())
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-emerald-700 hover:from-green-600 hover:to-green-700 text-white hover:scale-105'
               }`}
