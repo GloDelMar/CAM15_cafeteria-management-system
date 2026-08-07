@@ -1,149 +1,210 @@
-# Cafeteria CAM 15 POS
+# ☕ CAM15 POS — Full Stack Cafeteria Management System
 
-Sistema web de punto de venta para Cafeteria CAM 15.
+> A production-oriented Point of Sale (POS) platform built for a vocational training cafeteria at Centro de Atención Múltiple No. 15 (CAM15), helping students with disabilities develop workplace skills through real-world digital tools.
 
-## Resumen
+## 🚀 Built for real-world impact
 
-- Frontend: Next.js 16 + React 19 + TypeScript + Tailwind CSS 4
-- Backend: FastAPI + Python 3.11
-- Base de datos: MongoDB
-- Archivos (tickets e imagenes): AWS S3 o almacenamiento local en backend/uploads
+![CAM15 POS Hero](public/Hero_cafereria.svg)
 
-## Estructura del proyecto
+A modern Full Stack solution designed to digitize cafeteria operations, streamline daily workflows, and support vocational training through technology created for real users.
 
-```text
-cafeteria_cam15/
-|-- frontend/         # Aplicacion web (Next.js)
-|-- backend/          # API (FastAPI + MongoDB)
-|-- kivy_app/         # Referencia de la app original
-|-- README.md
+- 🔧 Full Stack web architecture
+- 🛒 POS, inventory, cash, and order management
+- 📱 Responsive and accessible user experience
+- ☁️ Scalable backend with cloud-ready storage
+
+---
+
+## 📖 About the Project
+
+CAM15 Cafeteria Management System is a Full Stack application created to digitize the operations of a school cafeteria used as a learning space within the CAM 15 Vocational Training Workshop.
+
+The system allows users to manage products, record sales, control cash, handle debtors, and generate kitchen orders, offering a simple and intuitive solution for an educational environment.
+
+This project represents the evolution of an application originally built in Kivy into a modern web architecture based on Next.js and FastAPI.
+
+It combines practical business functionality with an educational purpose, making it a strong example of how technology can support real-world operations while also creating meaningful learning experiences.
+
+---
+
+## 🎯 Project Overview
+
+This project was designed and developed as a complete Full Stack solution to address a real need in a work environment, transforming a traditional cafeteria workflow into a scalable web platform.
+
+The system provides digital tools for daily cafeteria operations, including sales management, inventory control, order preparation, and financial tracking, built for real users in a practical and operational context.
+
+### My Role
+
+Full Stack Developer responsible for:
+
+- Designing the application architecture
+- Developing the frontend interface
+- Building REST APIs
+- Integrating MongoDB database operations
+- Implementing file storage with AWS S3
+- Creating responsive user interfaces
+- Deploying and configuring the application environment
+
+---
+
+## ✨ Features
+
+- 🛒 Point of Sale (POS)
+- 📦 Product management
+- 🖼️ Image upload
+- 💳 Sales registration
+- 🧾 Digital receipts
+- 💰 Cash control
+- 👥 Debtor management
+- 🍔 Kitchen orders
+- ☁️ AWS S3 storage
+- 📱 Responsive design
+
+---
+
+## 🏗 Architecture
+
+### Frontend
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+
+### Backend
+
+- FastAPI
+- Python 3.11
+
+### Database
+
+- MongoDB
+
+### Storage
+
+- AWS S3
+- Local storage in backend/uploads
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="public/caja_pantalla_ventas.png" alt="Sales screen" width="48%" style="margin: 6px; border-radius: 10px;" />
+  <img src="public/personaliza_comanda.png" alt="Custom order" width="48%" style="margin: 6px; border-radius: 10px;" />
+</p>
+
+<p align="center">
+  <img src="public/sugerencia_cambio.png" alt="Suggested change" width="48%" style="margin: 6px; border-radius: 10px;" />
+  <img src="public/comandas.png" alt="Kitchen orders" width="48%" style="margin: 6px; border-radius: 10px;" />
+</p>
+
+---
+
+## 🚀 Installation
+
+### Clone the repository
+
+```bash
+git clone https://github.com/GloDelMar/CAM15_cafeteria-management-system.git
 ```
 
-## Requisitos
-
-- Python 3.11+
-- Node.js 20+
-- npm 10+
-- MongoDB local o Atlas
-
-## Configuracion rapida
-
-### 1) Backend
+### Backend
 
 ```bash
 cd backend
+
 python -m venv venv
-source venv/bin/activate    # Linux/macOS
-# venv\Scripts\activate     # Windows
+
 pip install -r requirements.txt
+
+uvicorn main:app --reload
 ```
 
-Crear o editar backend/.env:
-
-```env
-MONGODB_URI=mongodb+srv://TU_USUARIO:TU_PASSWORD@TU_CLUSTER.mongodb.net/?retryWrites=true&w=majority
-MONGODB_DB=cafeteria_cam15
-MONGODB_SERVER_SELECTION_TIMEOUT_MS=15000
-
-# Opcional: CORS explicito (actualmente la API permite "*")
-FRONTEND_URL=http://localhost:3000
-
-# Opcional: AWS S3 para documentos e imagenes
-AWS_S3_BUCKET=tu-bucket
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=tu-access-key
-AWS_SECRET_ACCESS_KEY=tu-secret-key
-# AWS_S3_PUBLIC_URL=https://cdn.tudominio.com
-# AWS_S3_ENDPOINT_URL=https://s3.tu-proveedor.com
-```
-
-Levantar API:
-
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-URLs utiles:
-
-- API: http://localhost:8000
-- Swagger: http://localhost:8000/docs
-
-### 2) Frontend
+### Frontend
 
 ```bash
 cd frontend
+
 npm install
-```
 
-Crear frontend/.env.local:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_AUTH_PASSWORD=cicloescolar2025-2026
-```
-
-Levantar frontend:
-
-```bash
 npm run dev
 ```
 
-Si el puerto 3000 esta ocupado:
+---
 
-```bash
-npm run dev -- --port 3002
+## ⚙ Environment Variables
+
+### Backend
+
+```env
+MONGODB_URI=
+MONGODB_DB=
+AWS_S3_BUCKET=
+AWS_REGION=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
 ```
 
-URL: http://localhost:3000 (o el puerto alternativo)
+### Frontend
 
-## Funcionalidades principales
-
-- Gestion de productos con imagenes
-- Venta con carrito y personalizaciones
-- Registro de transacciones
-- Sistema de deudores y abonos
-- Caja unica (ingresos, egresos, ajustes)
-- Comandas para cocina con estados pendiente/entregada
-- Tickets con almacenamiento en S3 (si esta configurado)
-
-## Endpoints principales
-
-- Productos: /api/products
-- Transacciones: /api/transactions
-- Deudores: /api/debtors
-- Caja: /api/cash
-- Cajas: /api/cajas
-- Documentos: /api/documents
-
-Referencia detallada: backend/API_DOCS.md
-
-## Limpieza de datos
-
-Si quieres limpiar datos de operacion (ventas, productos, deudores, etc.), usa un script de mantenimiento controlado y deja siempre una caja activa. Si no tienes script, puedes automatizarlo con un comando interno de soporte.
-
-## Build de produccion
-
-Frontend:
-
-```bash
-cd frontend
-npm run build
-npm run start
+```env
+NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_AUTH_PASSWORD=
 ```
 
-Backend:
+---
 
-```bash
-cd backend
-uvicorn main:app --host 0.0.0.0 --port 8000
+## 📂 Project Structure
+
+```text
+cafeteria_cam15/
+
+├── frontend/
+├── backend/
+├── kivy_app/
+└── README.md
 ```
 
-## Notas de seguridad
+---
 
-- Cambia NEXT_PUBLIC_AUTH_PASSWORD en produccion.
-- Nunca subas archivos .env al repositorio.
-- Usa credenciales IAM con permisos minimos para AWS.
+## 💡 What I Learned
 
-## Licencia y uso
+During the development of this project, I strengthened my knowledge in:
 
-Proyecto de uso institucional. Consulta LICENSE para detalles legales de uso y distribucion.
+- Full Stack architecture
+- REST APIs with FastAPI
+- MongoDB
+- Frontend-backend integration
+- File handling in AWS S3
+- Designing systems for real users
+- Organizing scalable projects
+
+---
+
+## 🔮 Future Improvements
+
+- Role-based authentication
+- Reports and statistics
+- Advanced admin panel
+- Automatic ticket printing
+- Dashboard with metrics
+- Real-time notifications
+
+---
+
+## 👩‍💻 Author
+
+**Gloriela Suárez Castañeda**
+
+Full Stack Developer
+
+GitHub: https://github.com/GloDelMar
+
+---
+
+## 📄 License
+
+This project is proprietary and all rights are reserved. To review the full legal terms, please consult [LICENSE](LICENSE).
+
+> Reproduction, distribution, modification, or unauthorized use of this software is strictly prohibited without written permission from the author.
