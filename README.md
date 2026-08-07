@@ -90,7 +90,7 @@ Full Stack Developer responsible for:
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="public/login.png" alt="Login screen" width="48%" style="margin: 6px; border-radius: 10px;" />
+  <img src="frontend/public/login.png" alt="Login screen" width="48%" style="margin: 6px; border-radius: 10px;" />
   <img src="public/caja_pantalla_ventas.png" alt="Sales screen" width="48%" style="margin: 6px; border-radius: 10px;" />
 </p>
 
