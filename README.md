@@ -90,13 +90,17 @@ Full Stack Developer responsible for:
 ## 📸 Screenshots
 
 <p align="center">
+  <img src="public/login.png" alt="Login screen" width="48%" style="margin: 6px; border-radius: 10px;" />
   <img src="public/caja_pantalla_ventas.png" alt="Sales screen" width="48%" style="margin: 6px; border-radius: 10px;" />
-  <img src="public/personaliza_comanda.png" alt="Custom order" width="48%" style="margin: 6px; border-radius: 10px;" />
 </p>
 
 <p align="center">
+  <img src="public/personaliza_comanda.png" alt="Custom order" width="48%" style="margin: 6px; border-radius: 10px;" />
   <img src="public/sugerencia_cambio.png" alt="Suggested change" width="48%" style="margin: 6px; border-radius: 10px;" />
-  <img src="public/comandas.png" alt="Kitchen orders" width="48%" style="margin: 6px; border-radius: 10px;" />
+</p>
+
+<p align="center">
+  <img src="public/comandas.png" alt="Kitchen orders" width="100%" style="margin: 6px; border-radius: 10px;" />
 </p>
 
 ---
